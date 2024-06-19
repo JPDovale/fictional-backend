@@ -1,0 +1,30 @@
+version: "3.8"
+
+networks:
+  local:
+    driver: bridge
+
+services:
+  redis:
+    container_name: fictional-redis
+    image: redis/redis-stack:latest
+    ports:
+      - 6379:6379
+      - 8001:8001
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - local
+
+  postgres:
+    container_name: fictional-db
+    # For prodution is recomendly use bitnami images
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: fictional
+    networks:
+      - local

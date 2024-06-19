@@ -1,0 +1,266 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @unique @default(uuid())
+  name      String
+  email     String    @unique
+  username  String    @unique
+  password  String
+  imageUrl  String?   @map("image_url")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  refreshTokens RefreshToken[]
+  projects      Project[]
+
+  @@map("__users")
+}
+
+model RefreshToken {
+  id        String    @id @unique @default(uuid())
+  token     String
+  expiresIn DateTime  @map("expires_in")
+  expiredAt DateTime? @map("expired_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @map("user_id")
+
+  @@map("__refresh_tokens")
+}
+
+enum ProjectType {
+  BOOK
+}
+
+enum ProjectStructureType {
+  FICTIONAL_FLOW
+}
+
+model Project {
+  id            String               @id @unique @default(uuid())
+  name          String
+  type          ProjectType
+  structureType ProjectStructureType
+  imageUrl      String?              @map("image_url")
+  buildBlocks   String               @map("build_blocks")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime?            @updatedAt @map("updated_at")
+  deletedAt     DateTime?            @map("deleted_at")
+
+  foundation Foundation?
+  persons    Person[]
+  files      File[]
+  timelines  Timeline[]
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @map("user_id")
+
+  @@map("__projects")
+}
+
+model Foundation {
+  id         String    @id @unique @default(uuid())
+  foundation String?
+  what       String?
+  why        String?
+  where      String?
+  who        String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId String  @unique @map("project_id")
+
+  @@map("__foundations")
+}
+
+enum PersonType {
+  PROTAGONIST
+  ANTAGONIST
+  SUPPORTING
+  SECONDARY
+  ADVERSARY
+  MENTOR
+  COMIC
+  SYMBOLIC
+  EXTRA
+}
+
+model Person {
+  id        String     @id @unique @default(uuid())
+  name      String?
+  history   String?
+  imageUrl  String?    @map("image_url")
+  type      PersonType
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime?  @updatedAt @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
+
+  affiliationsFather Affiliation[] @relation(name: "father")
+  affiliationsMother Affiliation[] @relation(name: "mother")
+  attributes         Attribute[]
+  events             PersonEvent[]
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId String  @map("project_id")
+
+  affiliation   Affiliation? @relation(fields: [affiliationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  affiliationId String?      @map("affiliation_id")
+
+  @@map("__persons")
+}
+
+model Affiliation {
+  id        String    @id @unique @default(uuid())
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  sons Person[]
+
+  father   Person @relation(name: "father", fields: [fatherId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fatherId String @map("father_id")
+
+  mother   Person @relation(name: "mother", fields: [motherId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  motherId String @map("mother_id")
+
+  @@map("__affiliations")
+}
+
+enum AttributeType {
+  APPEARANCE
+  DREAM
+  OBJECTIVE
+  PERSONALITY
+  TRAUMA
+  VALUE
+  HOBBY
+  FEAR
+  MOTIVATION
+  ADDICTION
+  DESIRE
+  HABIT
+}
+
+model Attribute {
+  id        String        @id @unique @default(uuid())
+  type      AttributeType
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime?     @updatedAt @map("updated_at")
+  deletedAt DateTime?     @map("deleted_at")
+
+  persons   Person[]
+  mutations AttributeMutation[]
+
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId String @map("file_id")
+
+  @@map("__attributes")
+}
+
+model File {
+  id        String    @id @unique @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  attributes          Attribute[]
+  attributesMutations AttributeMutation[]
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId String  @map("project_id")
+
+  @@map("__files")
+}
+
+model AttributeMutation {
+  id        String    @id @unique @default(uuid())
+  title     String
+  position  Int
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  attributeId String    @map("attribute_id")
+
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId String @map("file_id")
+
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  eventId String? @map("event_id")
+
+  @@map("__attributes_mutations")
+}
+
+model Timeline {
+  id        String    @id @unique @default(uuid())
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId String  @map("project_id")
+
+  events Event[]
+
+  @@map("__timelines")
+}
+
+model Event {
+  id              String    @id @unique @default(uuid())
+  date            String
+  event           String
+  importanceLevel Int       @map("importance_level")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime? @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  timeline   Timeline @relation(fields: [timelineId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  timelineId String   @map("timeline_id")
+
+  attributesMutations AttributeMutation[]
+  personEvents        PersonEvent[]
+
+  @@map("__events")
+}
+
+enum PersonEventType {
+  BIRTH
+  DEATH
+}
+
+model PersonEvent {
+  id        String          @id @unique @default(uuid())
+  type      PersonEventType
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime?       @updatedAt @map("updated_at")
+  deletedAt DateTime?       @map("deleted_at")
+
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  eventId String @map("event_id")
+
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  personId String @map("person_id")
+
+  @@map("__person_events")
+}
