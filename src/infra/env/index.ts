@@ -16,9 +16,13 @@ export const envSchema = z.object({
     .enum(['development', 'production', 'debug', 'test'])
     .default('production'),
   CLOUDFLARE_END_POINT: z.string().url(),
+  CLOUDFLARE_VIEW_URL: z.string().url(),
   CLOUDFLARE_ACCESS_KEY: z.string(),
   CLOUDFLARE_ACCESS_KEY_ID: z.string(),
   CLOUDFLARE_BUCKET: z.string(),
+  ACCEPT_ORIGINS: z.string().transform((origins) => origins.split(',')),
+  NEW_RELIC_APP_NAME: z.string(),
+  NEW_RELIC_LICENSE_KEY: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>
