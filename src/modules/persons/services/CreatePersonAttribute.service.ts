@@ -46,7 +46,6 @@ export class CreatePersonAttributeService
     private readonly personsRepository: PersonsRepository,
     private readonly filesRepository: FilesRepository,
     private readonly attributesRepository: AttributesRepository,
-    private readonly attributesToPersonsRepository: AttributesToPersonsRepository,
   ) {}
 
   async execute({
@@ -100,7 +99,7 @@ export class CreatePersonAttributeService
       personId: person.id,
     })
     transaction.add((ctx) =>
-      this.attributesToPersonsRepository.create(attributeToPerson, ctx),
+      this.attributesRepository.createAttributeToPerson(attributeToPerson, ctx),
     )
 
     await this.transactor.execute(transaction)

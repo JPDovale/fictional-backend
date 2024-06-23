@@ -1,9 +1,8 @@
 import { UserNotFound } from '@modules/users/errors/UserNotFound.error'
 import { Service } from '@shared/core/contracts/Service'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Either, left, right } from '@shared/core/errors/Either'
 import { UsersRepository } from '@modules/users/repositories/Users.repository'
-import { ImagesManipulatorProvider } from '@providers/base/images/contracts/ImagesManipulator.provider'
 import { CannotGetSafeLocationForImage } from '@providers/base/images/errors/CannotGetSafeLocationForImage.error'
 import { ProjectNotFound } from '@modules/projects/errors/ProjectNotFound.error'
 import { ProjectsRepository } from '@modules/projects/repositories/Projects.repository'
@@ -17,6 +16,9 @@ import { Person } from '../entities/Person'
 import { PersonsRepository } from '../repositories/Persons.repository'
 import { PersonType } from '../entities/types'
 import { PersonNotFound } from '../errors/PersonNotFound.error'
+import { TransactorService } from '@infra/database/transactor/contracts/Transactor.service'
+import { UpdateAllPersonEventsService } from '@modules/timelines/services/UpdateAllPersonEvents.service'
+import { UpdateBirthAndDeathDateOfPersonInDefaultTimelineService } from '@modules/timelines/services/UpdateBirthAndDeathDateOfPersonInDefaultTimeline.service'
 
 type Request = {
   name?: string | null
@@ -49,12 +51,14 @@ export class UpdatePersonService
   implements Service<Request, PossibleErrors, Response>
 {
   constructor(
+    private readonly transactor: TransactorService,
     private readonly usersRepository: UsersRepository,
     private readonly projectsRepository: ProjectsRepository,
     private readonly personsRepository: PersonsRepository,
-    private readonly ImagesManipulatorProvider: ImagesManipulatorProvider,
     private readonly getAffiliationByParentsIdService: GetAffiliationByParentsIdService,
     private readonly createAffiliationService: CreateAffiliationService,
+    private readonly updateAllPersonEventsService: UpdateAllPersonEventsService,
+    private readonly updateBirthAndDeathDateOfPersonInDefaultTimelineService: UpdateBirthAndDeathDateOfPersonInDefaultTimelineService,
   ) {}
 
   async execute({
@@ -97,77 +101,78 @@ export class UpdatePersonService
       return left(new ProjectActionBlocked())
     }
 
-    let affiliationId: UniqueId | null = null
+    const transaction = this.transactor.start()
 
-    if (fatherId || motherId) {
-      const affiliationResposne =
-        await this.getAffiliationByParentsIdService.execute({
-          fatherId: fatherId ?? undefined,
-          motherId: motherId ?? undefined,
-        })
+    transaction.add(async (ctx) => {
+      let affiliationId: UniqueId | null = null
 
-      if (
-        affiliationResposne.isLeft() &&
-        !(affiliationResposne.value instanceof AffiliationNotFound)
-      ) {
-        return left(affiliationResposne.value)
+      if (fatherId || motherId) {
+        const affiliationResposne =
+          await this.getAffiliationByParentsIdService.execute({
+            fatherId: fatherId ?? undefined,
+            motherId: motherId ?? undefined,
+          })
+
+        if (
+          affiliationResposne.isLeft() &&
+          !(affiliationResposne.value instanceof AffiliationNotFound)
+        ) {
+          throw new BadRequestException(affiliationResposne.value)
+        }
+
+        if (affiliationResposne.isRight()) {
+          const { affiliation } = affiliationResposne.value
+          affiliationId = affiliation.id
+        }
       }
 
-      if (affiliationResposne.isRight()) {
-        const { affiliation } = affiliationResposne.value
+      if ((fatherId || motherId) && !affiliationId) {
+        const createAffiliationResponse =
+          await this.createAffiliationService.execute(
+            {
+              motherId: motherId ?? undefined,
+              fatherId: fatherId ?? undefined,
+            },
+            ctx,
+          )
+
+        if (createAffiliationResponse.isLeft()) {
+          throw new BadRequestException(createAffiliationResponse.value)
+        }
+
+        const { affiliation } = createAffiliationResponse.value
         affiliationId = affiliation.id
       }
-    }
 
-    if ((fatherId || motherId) && !affiliationId) {
-      const createAffiliationResponse =
-        await this.createAffiliationService.execute({
-          motherId: motherId ?? undefined,
-          fatherId: fatherId ?? undefined,
-        })
+      const oldType = person.type
 
-      if (createAffiliationResponse.isLeft()) {
-        return left(createAffiliationResponse.value)
+      person.name = name
+      person.image = image
+      person.type = type ?? undefined
+      person.history = history
+      person.affiliationId = affiliationId ?? undefined
+
+      if (project.buildBlocks.implements(BuildBlock.TIME_LINES)) {
+        if (oldType !== type) {
+          await this.updateAllPersonEventsService.execute({ person }, ctx)
+        }
+
+        if (!(birthDate === undefined && deathDate === undefined)) {
+          await this.updateBirthAndDeathDateOfPersonInDefaultTimelineService.execute(
+            {
+              person,
+              birthDate,
+              deathDate,
+            },
+            ctx,
+          )
+        }
       }
 
-      const { affiliation } = createAffiliationResponse.value
-      affiliationId = affiliation.id
-    }
+      await this.personsRepository.save(person, ctx)
+    })
 
-    const imageSecure = await this.ImagesManipulatorProvider.getImage(
-      image ?? undefined,
-    )
-
-    if (image && !imageSecure) {
-      return left(new CannotGetSafeLocationForImage())
-    }
-
-    if (image && imageSecure) {
-      await imageSecure.copyToSecure()
-    }
-
-    const oldType = person.type
-
-    person.name = name
-    person.image = imageSecure?.savedName
-    person.type = type ?? undefined
-    person.history = history
-    person.affiliationId = affiliationId ?? undefined
-
-    if (project.buildBlocks.implements(BuildBlock.TIME_LINES)) {
-      if (oldType !== type) {
-        person.addPersonInfosUsedInEventsUpdatedEvent()
-      }
-
-      if (!(birthDate === undefined && deathDate === undefined)) {
-        person.addPersonBirthOrDeathDateUpdateEvent({
-          birthDate,
-          deathDate,
-        })
-      }
-    }
-
-    await this.personsRepository.save(person)
+    await this.transactor.execute(transaction)
 
     return right({ person })
   }

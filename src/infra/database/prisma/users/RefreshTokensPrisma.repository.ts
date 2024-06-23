@@ -2,7 +2,9 @@ import { RefreshTokensRepository } from '@modules/users/repositories/RefreshToke
 import { PrismaContext, PrismaService } from '../Prisma.service'
 import { RefreshToken } from '@modules/users/entities/RefreshToken'
 import { RefreshTokensPrismaMapper } from './RefreshTokensPrisma.mapper'
+import { Injectable } from '@nestjs/common'
 
+@Injectable()
 export class RefreshTokensPrismaRepository
   implements RefreshTokensRepository<PrismaContext>
 {
@@ -37,7 +39,33 @@ export class RefreshTokensPrismaRepository
     throw new Error('Method not implemented.')
   }
 
-  delete(_id: string, _ctx?: PrismaContext | undefined): Promise<void> {
-    throw new Error('Method not implemented.')
+  async delete(id: string, ctx?: PrismaContext | undefined): Promise<void> {
+    const db = ctx?.prisma ?? this.prisma
+
+    try {
+      await db.refreshToken.delete({
+        where: {
+          id,
+        },
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async findByUserIdAndToken(
+    userId: string,
+    token: string,
+  ): Promise<RefreshToken | null> {
+    const refreshToken = await this.prisma.refreshToken.findFirst({
+      where: {
+        userId,
+        token,
+      },
+    })
+
+    if (!refreshToken) return null
+
+    return this.mapper.toDomain(refreshToken)
   }
 }

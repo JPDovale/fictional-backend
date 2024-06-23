@@ -1,4 +1,4 @@
 export function makeImageLocation(imageName?: string | null) {
   if (!imageName) return null
-  return `http://localhost:4141/images/${imageName}`
+  return `https://pub-e7010998082d4cf29f84e4d3aa1f737f.r2.dev/${imageName}`
 }

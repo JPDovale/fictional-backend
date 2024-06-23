@@ -3,9 +3,18 @@ import { z } from 'zod'
 import { BuildBlock } from '../valueObjects/BuildBlocks'
 
 const createProjectSchema = z.object({
-  name: z.string().trim().min(3).max(255),
-  userId: z.string().trim().uuid(),
-  image: z.string().trim().optional(),
+  name: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .min(3)
+    .max(255),
+  image: z
+    .string()
+    .trim()
+    .max(512)
+    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .optional(),
   buildBlocks: z.array(z.nativeEnum(BuildBlock)),
 })
 

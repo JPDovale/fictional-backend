@@ -52,22 +52,25 @@ export class AttributePresenter
       id: raw.id.toString(),
       type: raw.type,
       fileId: raw.fileId.toString(),
-      mutations: raw.mutations.getItems().map((mutation) => ({
-        id: mutation.id.toString(),
-        fileId: mutation.fileId.toString(),
-        position: mutation.position,
-        title: mutation.title,
-        importanceLevel: mutation.importanceLevel,
-        eventId: mutation.eventId?.toString() ?? null,
-        date: mutation.date
-          ? {
-              date: mutation.date.toString(),
-              ...mutation.date.toValue(),
-            }
-          : null,
-        createdAt: mutation.createdAt,
-        updatedAt: mutation.updatedAt,
-      })),
+      mutations: raw.mutations
+        .getItems()
+        .sort((a, b) => a.position - b.position)
+        .map((mutation) => ({
+          id: mutation.id.toString(),
+          fileId: mutation.fileId.toString(),
+          position: mutation.position,
+          title: mutation.title,
+          importanceLevel: mutation.importanceLevel,
+          eventId: mutation.eventId?.toString() ?? null,
+          date: mutation.date
+            ? {
+                date: mutation.date.toString(),
+                ...mutation.date.toValue(),
+              }
+            : null,
+          createdAt: mutation.createdAt,
+          updatedAt: mutation.updatedAt,
+        })),
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
     }

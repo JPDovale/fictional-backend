@@ -6,5 +6,5 @@ export abstract class Service<
   K extends ServiceError | null = null,
   J = null,
 > {
-  abstract execute(props: T): Promise<Either<K, J>>
+  abstract execute(props: T, ctx?: unknown): Promise<Either<K, J>>
 }

@@ -1,6 +1,11 @@
 import { envSchema } from '@infra/env'
 import { EnvModule } from '@infra/env/Env.module'
-import { UserModule } from '@modules/users/User.module'
+import { FilesModule } from '@modules/files/Files.module'
+import { FoundationsModule } from '@modules/foundations/Foundations.module'
+import { PersonsModule } from '@modules/persons/Persons.module'
+import { ProjectsModule } from '@modules/projects/Projects.module'
+import { TimelinesModule } from '@modules/timelines/Timelines.module'
+import { UsersModule } from '@modules/users/Users.module'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { AuthModule } from '@providers/auth/Auth.module'
@@ -14,8 +19,12 @@ import { AuthModule } from '@providers/auth/Auth.module'
     AuthModule,
     EnvModule,
 
-    UserModule,
-    // ProjectModule,
+    UsersModule,
+    ProjectsModule,
+    FoundationsModule,
+    PersonsModule,
+    TimelinesModule,
+    FilesModule,
   ],
 })
 export class AppModule {}

@@ -1,30 +1,46 @@
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from '@infra/presenters/Error.presenter'
-// import { DeletePersonGateway } from '../gateways/DeletePerson.gateway'
-// import { DeletePersonService } from '../services/DeletePerson.service'
-// import { EmptyPresenter } from '@infra/requester/presenters/Empty.presenter'
+import { Controller } from '@shared/core/contracts/Controller'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import {
+  Controller as ControllerNest,
+  Delete,
+  HttpCode,
+  Param,
+} from '@nestjs/common'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
+import {
+  DeletePersonGateway,
+  DeletePersonParams,
+} from '../gateways/DeletePerson.gateway'
+import { DeletePersonService } from '../services/DeletePerson.service'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import { EmptyPresenter } from '@infra/presenters/Empty.presente'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
 
-// @Injectable()
-// export class DeletePersonController implements Controller<PresenterProps> {
-//   constructor(
-//     private readonly deletePersonGateway: DeletePersonGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly deletePersonService: DeletePersonService,
-//     private readonly emptyPresenter: EmptyPresenter,
-//   ) {}
+@ControllerNest('/projects/:projectId/persons/:personId')
+export class DeletePersonController implements Controller<PresenterProps> {
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly deletePersonService: DeletePersonService,
+    private readonly emptyPresenter: EmptyPresenter,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body = this.deletePersonGateway.transform(_data)
+  @Delete()
+  @HttpCode(StatusCode.NO_CONTENT)
+  async handle(
+    @Param(DeletePersonGateway) params: DeletePersonParams,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response = await this.deletePersonService.execute({
+      ...params,
+      userId: sub,
+    })
 
-//     const response = await this.deletePersonService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
-
-//     return this.emptyPresenter.present()
-//   }
-// }
+    return this.emptyPresenter.present()
+  }
+}

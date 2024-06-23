@@ -40,13 +40,13 @@ export class UpdateBirthAndDeathDateOfPersonInDefaultTimelineService
     private readonly eventsToPersonRepository: EventsToPersonRepository,
   ) {}
 
-  async execute({
-    birthDate,
-    deathDate,
-    person,
-  }: Request): Promise<Either<PossibleErros, Response>> {
+  async execute(
+    { birthDate, deathDate, person }: Request,
+    ctx?: unknown,
+  ): Promise<Either<PossibleErros, Response>> {
     const project = await this.projectsRepository.findById(
       person.projectId.toString(),
+      ctx,
     )
     if (!project) {
       return left(new ProjectNotFound())
@@ -69,6 +69,7 @@ export class UpdateBirthAndDeathDateOfPersonInDefaultTimelineService
           personId: person.id.toString(),
           timelineId: timeline.id.toString(),
         },
+        ctx,
       )
     const eventsIds = eventsToPerson.map((event) => event.eventId.toString())
     let events = await this.eventsRepository.findManyByIds(eventsIds)

@@ -1,32 +1,48 @@
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from '@infra/presenters/Error.presenter'
-// import { GetTimelineGateway } from '../gateways/GetTimeline.gateways'
-// import { GetTimelineService } from '../services/GetTimeline.service'
-// import { TimelineWithEventsPresenter } from '../presenters/TimelineWithEvents.presenter'
+import { Controller } from '@shared/core/contracts/Controller'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import {
+  Controller as ControllerNest,
+  Get,
+  HttpCode,
+  Param,
+} from '@nestjs/common'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
+import {
+  GetTimelineGateway,
+  GetTimelineParams,
+} from '../gateways/GetTimeline.gateways'
+import { GetTimelineService } from '../services/GetTimeline.service'
+import { TimelineWithEventsPresenter } from '../presenters/TimelineWithEvents.presenter'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
 
-// @Injectable()
-// export class GetTimelineController implements Controller<PresenterProps> {
-//   constructor(
-//     private readonly getTimelineGateway: GetTimelineGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly getTimelineService: GetTimelineService,
-//     private readonly timelineWithEventsPresenter: TimelineWithEventsPresenter,
-//   ) {}
+@ControllerNest('/projects/:projectId/timelines/:timelineId')
+export class GetTimelineController implements Controller<PresenterProps> {
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly getTimelineService: GetTimelineService,
+    private readonly timelineWithEventsPresenter: TimelineWithEventsPresenter,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body = this.getTimelineGateway.transform(_data)
+  @Get()
+  @HttpCode(StatusCode.OK)
+  async handle(
+    @Param(GetTimelineGateway) params: GetTimelineParams,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response = await this.getTimelineService.execute({
+      ...params,
+      userId: sub,
+    })
 
-//     const response = await this.getTimelineService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
+    const { timeline } = response.value
 
-//     const { timeline } = response.value
-
-//     return this.timelineWithEventsPresenter.present(timeline)
-//   }
-// }
+    return this.timelineWithEventsPresenter.present(timeline)
+  }
+}

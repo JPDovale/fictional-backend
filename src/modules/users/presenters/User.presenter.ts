@@ -1,14 +1,13 @@
 import { Presenter, PresenterProps } from '@shared/core/contracts/Presenter'
 import { StatusCode } from '@shared/core/types/StatusCode'
 import { Injectable } from '@nestjs/common'
-import { makeImageLocation } from '@utils/makeImageLocation'
 import { User } from '../entities/User'
+import { makeImageLocation } from '@utils/makeImageLocation'
 
 export interface UserResponse {
   id: string
   name: string
   username: string
-  skipLogin: boolean
   verified: boolean
   imageUrl: string | null
   createdAt: Date
@@ -32,8 +31,9 @@ export class UserPresenter
       id: raw.id.toString(),
       name: raw.name,
       username: raw.username.toString(),
-      imageUrl: makeImageLocation(raw.imageUrl),
-      skipLogin: raw.skipLogin,
+      imageUrl: raw.imageUrl?.startsWith('http')
+        ? raw.imageUrl
+        : makeImageLocation(raw.imageUrl),
       verified: raw.verified,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,

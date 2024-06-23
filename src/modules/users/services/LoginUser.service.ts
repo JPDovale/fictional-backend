@@ -40,6 +40,10 @@ export class LoginUserService {
       return left(new UserWrongCredentials())
     }
 
+    if (!user.password) {
+      return left(new UserWrongCredentials())
+    }
+
     const passwordMatch = await this.hashComparer.compare(
       password,
       user.password,

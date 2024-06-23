@@ -22,10 +22,10 @@ export class CreateTimelineService
 {
   constructor(private readonly timelinesRepository: TimelinesRepository) {}
 
-  async execute({
-    project,
-    name,
-  }: Request): Promise<Either<PossibleErros, Response>> {
+  async execute(
+    { project, name }: Request,
+    ctx?: unknown,
+  ): Promise<Either<PossibleErros, Response>> {
     const timelineExists = await this.timelinesRepository.findByProjectId(
       project.id.toString(),
     )
@@ -38,7 +38,7 @@ export class CreateTimelineService
       name,
     })
 
-    await this.timelinesRepository.create(timeline)
+    await this.timelinesRepository.create(timeline, ctx)
 
     return right({ timeline })
   }

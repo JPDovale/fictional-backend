@@ -21,9 +21,10 @@ export class CreateFoundationService
 {
   constructor(private readonly foundationsRepository: FoundationsRepository) {}
 
-  async execute({
-    project,
-  }: Request): Promise<Either<PossibleErros, Response>> {
+  async execute(
+    { project }: Request,
+    ctx?: unknown,
+  ): Promise<Either<PossibleErros, Response>> {
     const foundationExists = await this.foundationsRepository.findByProjectId(
       project.id.toString(),
     )
@@ -33,7 +34,7 @@ export class CreateFoundationService
 
     const foundation = Foundation.create({ projectId: project.id })
 
-    await this.foundationsRepository.create(foundation)
+    await this.foundationsRepository.create(foundation, ctx)
 
     return right({ foundation })
   }

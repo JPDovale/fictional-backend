@@ -37,7 +37,9 @@ export class PersonPresenter
       id: raw.id.toString(),
       name: raw.name || '??????',
       image: {
-        url: makeImageLocation(raw.image),
+        url: raw.image?.startsWith('http')
+          ? raw.image
+          : makeImageLocation(raw.image),
         alt: raw.name ?? '',
       },
       history: raw.history,

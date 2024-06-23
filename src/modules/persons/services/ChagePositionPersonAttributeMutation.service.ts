@@ -100,7 +100,9 @@ export class ChangePositionPersonAttributeMutationService
       return left(new AttributeMutationNotFound())
     }
 
-    const mutations = attribute.mutations.getItems()
+    const mutations = attribute.mutations
+      .getItems()
+      .sort((a, b) => a.position - b.position)
     const mutationsToUpdate: AttributeMutation[] = []
     const transaction = this.transactor.start()
 
@@ -133,13 +135,14 @@ export class ChangePositionPersonAttributeMutationService
       }
     }
 
-    if (toPosition < 0 || toPosition > mutations.length) {
+    if (toPosition <= 0 || toPosition > mutations.length) {
       return left(new ProjectActionBlocked())
     }
 
     mutation.position = toPosition
     mutations.splice(fromPosition - 1, 1)
     mutations.splice(toPosition - 1, 0, mutation)
+
     mutationsToUpdate.push(mutation)
 
     mutations.forEach((mut, i) => {

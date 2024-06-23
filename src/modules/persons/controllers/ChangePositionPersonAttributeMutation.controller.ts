@@ -1,34 +1,58 @@
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from '@infra/presenters/Error.presenter'
-// import { EmptyPresenter } from '@infra/requester/presenters/Empty.presenter'
-// import { ChangePositionPersonAttributeMutationGateway } from '../gateways/ChangePositionPersonAttributeMutation.gateway'
-// import { ChangePositionPersonAttributeMutationService } from '../services/ChagePositionPersonAttributeMutation.service'
+import { Controller } from '@shared/core/contracts/Controller'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import {
+  Body,
+  Controller as ControllerNest,
+  HttpCode,
+  Param,
+  Patch,
+} from '@nestjs/common'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
+import { ChangePositionPersonAttributeMutationService } from '../services/ChagePositionPersonAttributeMutation.service'
+import { EmptyPresenter } from '@infra/presenters/Empty.presente'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import {
+  ChangePositionPersonAttributeMutationParamsGateway,
+  ChangePositionPersonAttributeMutationParams,
+  ChangePositionPersonAttributeMutationBodyGateway,
+  ChangePositionPersonAttributeMutationBody,
+} from '../gateways/ChangePositionPersonAttributeMutation.gateway'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
 
-// @Injectable()
-// export class ChangePositionPersonAttributeMutationController
-//   implements Controller<PresenterProps>
-// {
-//   constructor(
-//     private readonly changePositionPersonAttributeMutationGateway: ChangePositionPersonAttributeMutationGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly changePositionPersonAttributeMutationService: ChangePositionPersonAttributeMutationService,
-//     private readonly emptyPresenter: EmptyPresenter,
-//   ) {}
+@ControllerNest(
+  '/projects/:projectId/persons/:personId/attributes/:attributeId/mutations/:mutationId/position',
+)
+export class ChangePositionPersonAttributeMutationController
+  implements Controller<PresenterProps>
+{
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly changePositionPersonAttributeMutationService: ChangePositionPersonAttributeMutationService,
+    private readonly emptyPresenter: EmptyPresenter,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body =
-//       this.changePositionPersonAttributeMutationGateway.transform(_data)
+  @Patch()
+  @HttpCode(StatusCode.NO_CONTENT)
+  async handle(
+    @Param(ChangePositionPersonAttributeMutationParamsGateway)
+    params: ChangePositionPersonAttributeMutationParams,
+    @Body(ChangePositionPersonAttributeMutationBodyGateway)
+    body: ChangePositionPersonAttributeMutationBody,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response =
+      await this.changePositionPersonAttributeMutationService.execute({
+        ...body,
+        ...params,
+        userId: sub,
+      })
 
-//     const response =
-//       await this.changePositionPersonAttributeMutationService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
-
-//     return this.emptyPresenter.present()
-//   }
-// }
+    return this.emptyPresenter.present()
+  }
+}

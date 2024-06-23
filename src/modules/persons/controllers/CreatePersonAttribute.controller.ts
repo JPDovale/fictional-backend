@@ -1,33 +1,54 @@
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from '@infra/presenters/Error.presenter'
-// import { StatusCode } from '@shared/core/types/StatusCode'
-// import { CreatePersonAttributeGateway } from '../gateways/CreatePersonAttribute.gateway'
-// import { CreatePersonAttributeService } from '../services/CreatePersonAttribute.service'
+import { Controller } from '@shared/core/contracts/Controller'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import {
+  Body,
+  Controller as ControllerNest,
+  HttpCode,
+  Param,
+  Post,
+} from '@nestjs/common'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import { CreatePersonAttributeService } from '../services/CreatePersonAttribute.service'
+import {
+  CreatePersonAttributeBody,
+  CreatePersonAttributeBodyGateway,
+  CreatePersonAttributeParams,
+  CreatePersonAttributeParamsGateway,
+} from '../gateways/CreatePersonAttribute.gateway'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
 
-// @Injectable()
-// export class CreatePersonAttributeController
-//   implements Controller<PresenterProps>
-// {
-//   constructor(
-//     private readonly createPersonAttributeGateway: CreatePersonAttributeGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly createPersonAttributeService: CreatePersonAttributeService,
-//   ) {}
+@ControllerNest('/projects/:projectId/persons/:personId/attributes')
+export class CreatePersonAttributeController
+  implements Controller<PresenterProps>
+{
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly createPersonAttributeService: CreatePersonAttributeService,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body = this.createPersonAttributeGateway.transform(_data)
+  @Post()
+  @HttpCode(StatusCode.CREATED)
+  async handle(
+    @Param(CreatePersonAttributeParamsGateway)
+    params: CreatePersonAttributeParams,
+    @Body(CreatePersonAttributeBodyGateway) body: CreatePersonAttributeBody,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response = await this.createPersonAttributeService.execute({
+      ...body,
+      ...params,
+      userId: sub,
+    })
 
-//     const response = await this.createPersonAttributeService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
-
-//     return {
-//       status: StatusCode.CREATED,
-//     }
-//   }
-// }
+    return {
+      status: StatusCode.CREATED,
+    }
+  }
+}

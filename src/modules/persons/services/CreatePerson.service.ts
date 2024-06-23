@@ -2,7 +2,6 @@ import { UserNotFound } from '@modules/users/errors/UserNotFound.error'
 import { Service } from '@shared/core/contracts/Service'
 import { Either, left, right } from '@shared/core/errors/Either'
 import { UsersRepository } from '@modules/users/repositories/Users.repository'
-import { ImagesManipulatorProvider } from '@providers/base/images/contracts/ImagesManipulator.provider'
 import { CannotGetSafeLocationForImage } from '@providers/base/images/errors/CannotGetSafeLocationForImage.error'
 import { ProjectNotFound } from '@modules/projects/errors/ProjectNotFound.error'
 import { ProjectsRepository } from '@modules/projects/repositories/Projects.repository'
@@ -17,6 +16,7 @@ import { Person } from '../entities/Person'
 import { PersonsRepository } from '../repositories/Persons.repository'
 import { PersonType } from '../entities/types'
 import { Injectable } from '@nestjs/common'
+import { CreateManyPersonEventsForDefaultTimelineService } from '@modules/timelines/services/CreateManyPersonEventsForDefaultTimeline.service'
 
 type Request = {
   name?: string
@@ -49,9 +49,9 @@ export class CreatePersonService
     private readonly usersRepository: UsersRepository,
     private readonly projectsRepository: ProjectsRepository,
     private readonly personsRepository: PersonsRepository,
-    private readonly ImagesManipulatorProvider: ImagesManipulatorProvider,
     private readonly getAffiliationByParentsIdService: GetAffiliationByParentsIdService,
     private readonly createAffiliationService: CreateAffiliationService,
+    private readonly createManyPersonEventsForDefaultTimelineService: CreateManyPersonEventsForDefaultTimelineService,
   ) {}
 
   async execute({
@@ -120,23 +120,15 @@ export class CreatePersonService
       affiliationId = affiliation.id
     }
 
-    const imageSecure = await this.ImagesManipulatorProvider.getImage(image)
-
-    if (image && !imageSecure) {
-      return left(new CannotGetSafeLocationForImage())
-    }
-
-    if (image && imageSecure) {
-      await imageSecure.copyToSecure()
-    }
-
     const person = Person.create({
       name,
       projectId: project.id,
       affiliationId,
-      image: imageSecure?.savedName,
+      image,
       type,
     })
+
+    await this.personsRepository.create(person)
 
     if (project.buildBlocks.implements(BuildBlock.TIME_LINES)) {
       const events: { date: string; event: string; type: EventToPersonType }[] =
@@ -158,10 +150,11 @@ export class CreatePersonService
         })
       }
 
-      person.addPersonCreatedWithTimelineEvent(events)
+      await this.createManyPersonEventsForDefaultTimelineService.execute({
+        eventsReceived: events,
+        person,
+      })
     }
-
-    await this.personsRepository.create(person)
 
     return right({ person })
   }

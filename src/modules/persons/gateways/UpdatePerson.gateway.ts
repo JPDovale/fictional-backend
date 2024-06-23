@@ -3,18 +3,46 @@ import { z } from 'zod'
 import { PersonType } from '../entities/types'
 
 const updatePersonSchema = z.object({
-  name: z.string().trim().max(255).optional().nullable(),
   history: z.string().trim().optional().nullable(),
-  image: z.string().trim().optional().nullable(),
-  birthDate: z.string().trim().optional().nullable(),
-  deathDate: z.string().trim().optional().nullable(),
-  type: z.nativeEnum(PersonType).optional().nullable(),
-  userId: z.string().trim().uuid(),
+  name: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .max(255)
+    .optional()
+    .nullable(),
+  image: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .optional()
+    .nullable(),
+  birthDate: z
+    .string()
+    .trim()
+    .regex(/^[0-9:-]+$/)
+    .optional()
+    .nullable(),
+  deathDate: z
+    .string()
+    .trim()
+    .regex(/^[0-9:-]+$/)
+    .optional()
+    .nullable(),
+  type: z.nativeEnum(PersonType).optional(),
   motherId: z.string().trim().uuid().optional().nullable(),
   fatherId: z.string().trim().uuid().optional().nullable(),
-  projectId: z.string().trim().uuid(),
-  personId: z.string().trim().uuid(),
 })
 
 export type UpdatePersonBody = z.infer<typeof updatePersonSchema>
-export const UpdatePersonGateway = new ZodValidationPipe(updatePersonSchema)
+export const UpdatePersonBodyGateway = new ZodValidationPipe(updatePersonSchema)
+
+const updatePersonParamsSchema = z.object({
+  personId: z.string().trim().uuid(),
+  projectId: z.string().trim().uuid(),
+})
+
+export type UpdatePersonParams = z.infer<typeof updatePersonParamsSchema>
+export const UpdatePersonParamsGateway = new ZodValidationPipe(
+  updatePersonParamsSchema,
+)

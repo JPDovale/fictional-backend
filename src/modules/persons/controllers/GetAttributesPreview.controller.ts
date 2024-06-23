@@ -1,34 +1,50 @@
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from '@infra/presenters/Error.presenter'
-// import { GetAttributesPreviewGateway } from '../gateways/GetAttributesPreview.gateway'
-// import { GetAttributesPreviewService } from '../services/GetAttributesPreview.service'
-// import { AttributePreviewPresenter } from '../presenters/AttributesPreview.presenter'
+import { Controller } from '@shared/core/contracts/Controller'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import {
+  Controller as ControllerNest,
+  Get,
+  HttpCode,
+  Param,
+} from '@nestjs/common'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
+import {
+  GetAttributesPreviewGateway,
+  GetAttributesPreviewParams,
+} from '../gateways/GetAttributesPreview.gateway'
+import { GetAttributesPreviewService } from '../services/GetAttributesPreview.service'
+import { AttributePreviewPresenter } from '../presenters/AttributesPreview.presenter'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
 
-// @Injectable()
-// export class GetAttributesPreviewController
-//   implements Controller<PresenterProps>
-// {
-//   constructor(
-//     private readonly getAttributesPreviewGateway: GetAttributesPreviewGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly getAttributesPreviewService: GetAttributesPreviewService,
-//     private readonly attributePreviewPresenter: AttributePreviewPresenter,
-//   ) {}
+@ControllerNest('/projects/:projectId/persons-attributes')
+export class GetAttributesPreviewController
+  implements Controller<PresenterProps>
+{
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly getAttributesPreviewService: GetAttributesPreviewService,
+    private readonly attributePreviewPresenter: AttributePreviewPresenter,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body = this.getAttributesPreviewGateway.transform(_data)
+  @Get()
+  @HttpCode(StatusCode.OK)
+  async handle(
+    @Param(GetAttributesPreviewGateway) params: GetAttributesPreviewParams,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response = await this.getAttributesPreviewService.execute({
+      ...params,
+      userId: sub,
+    })
 
-//     const response = await this.getAttributesPreviewService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
+    const { attributes } = response.value
 
-//     const { attributes } = response.value
-
-//     return this.attributePreviewPresenter.presentMany(attributes)
-//   }
-// }
+    return this.attributePreviewPresenter.presentMany(attributes)
+  }
+}

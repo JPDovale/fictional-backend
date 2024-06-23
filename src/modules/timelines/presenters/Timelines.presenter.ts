@@ -20,7 +20,7 @@ export interface TimelinesPresented {
 }
 
 @Injectable()
-export class TimelinePresenter
+export class TimelinesPresenter
   implements Presenter<Timeline, TimelinePresented, TimelinesPresented>
 {
   private parse(raw: Timeline): TimelineResponse {

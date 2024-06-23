@@ -7,11 +7,12 @@ interface AffiliationProps {
   motherId: UniqueId | null
   createdAt: Date
   updatedAt: Date | null
+  trashedAt: Date | null
 }
 
 export class Affiliation extends AggregateRoot<AffiliationProps> {
   static create(
-    props: Optional<AffiliationProps, 'createdAt' | 'updatedAt'>,
+    props: Optional<AffiliationProps, 'createdAt' | 'updatedAt' | 'trashedAt'>,
     id?: UniqueId,
   ) {
     if (!props.fatherId && !props.motherId) {
@@ -22,6 +23,7 @@ export class Affiliation extends AggregateRoot<AffiliationProps> {
       ...props,
       createdAt: props.createdAt ?? new Date(),
       updatedAt: props.updatedAt ?? null,
+      trashedAt: props.trashedAt ?? null,
     }
 
     const affiliation = new Affiliation(affiliationProps, id)
@@ -53,6 +55,10 @@ export class Affiliation extends AggregateRoot<AffiliationProps> {
 
   get updatedAt() {
     return this.props.updatedAt
+  }
+
+  get trashedAt() {
+    return this.props.trashedAt
   }
 
   touch() {

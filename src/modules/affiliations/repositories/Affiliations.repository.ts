@@ -12,8 +12,9 @@ export abstract class AffiliationsRepository<T = unknown> extends Repository<
 > {
   abstract findByFatherAndMotherId(
     props: FindByFatherAndMotherIdProps,
+    ctx?: T,
   ): Promise<Affiliation | null>
 
-  abstract findByPersonId(personId: string): Promise<Affiliation[]>
+  abstract findByPersonId(personId: string, ctx?: T): Promise<Affiliation[]>
   abstract saveMany(affiliations: Affiliation[], ctx?: T): Promise<void>
 }

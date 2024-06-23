@@ -31,9 +31,13 @@ export class UpdateAllPersonEventsService
     private readonly eventsToPersonRepository: EventsToPersonRepository,
   ) {}
 
-  async execute({ person }: Request): Promise<Either<PossibleErros, Response>> {
+  async execute(
+    { person }: Request,
+    ctx?: unknown,
+  ): Promise<Either<PossibleErros, Response>> {
     const project = await this.projectsRepository.findById(
       person.projectId.toString(),
+      ctx,
     )
     if (!project) {
       return left(new ProjectNotFound())
@@ -46,9 +50,10 @@ export class UpdateAllPersonEventsService
     const eventsToPerson =
       await this.eventsToPersonRepository.findManyByPersonId(
         person.id.toString(),
+        ctx,
       )
     const eventsIds = eventsToPerson.map((event) => event.eventId.toString())
-    const events = await this.eventsRepository.findManyByIds(eventsIds)
+    const events = await this.eventsRepository.findManyByIds(eventsIds, ctx)
 
     for (const eventToPerson of eventsToPerson) {
       const eventType = eventToPerson.type
@@ -64,7 +69,7 @@ export class UpdateAllPersonEventsService
         Event.getImportanceLevelForPersonEvent(person.type, eventType)
     }
 
-    await this.eventsRepository.saveMany(events)
+    await this.eventsRepository.saveMany(events, ctx)
 
     return right({ events })
   }

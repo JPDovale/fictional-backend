@@ -3,6 +3,7 @@ import { StatusCode } from '@shared/core/types/StatusCode'
 import { PersonType } from '../entities/types'
 import { PersonWithDetails } from '../valuesObjects/PersonWithDetails'
 import { Injectable } from '@nestjs/common'
+import { makeImageLocation } from '@utils/makeImageLocation'
 
 export interface PersonWithDetailsResponse {
   id: string
@@ -62,7 +63,9 @@ export class PersonWithDetailsPresenter
       id: raw.personId.toString(),
       name: raw.name || '??????',
       image: {
-        url: raw.image,
+        url: raw.image?.startsWith('http')
+          ? raw.image
+          : makeImageLocation(raw.image),
         alt: raw.name ?? '',
       },
       type: raw.type,

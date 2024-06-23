@@ -2,8 +2,6 @@ import { AggregateRoot } from '@shared/core/entities/AggregateRoot'
 import { Optional } from '@shared/core/types/Optional'
 import { UniqueId } from '@shared/core/valueObjects/UniqueId'
 import { BuildBlock, BuildBlocks } from '../valueObjects/BuildBlocks'
-import { ProjectCreatedWithFoundationEvent } from '../events/ProjectCreatedWithFoundation.event'
-import { ProjectCreatedWithTimelineEvent } from '../events/ProjectCreatedWithTimeline.event'
 
 export enum ProjectType {
   BOOK = 'BOOK',
@@ -49,23 +47,6 @@ export class Project extends AggregateRoot<ProjectProps> {
     }
 
     const project = new Project(propsProject, id)
-
-    if (project.isNewEntity) {
-      const isProjectWithFoundation = project.buildBlocks.implements(
-        BuildBlock.FOUNDATION,
-      )
-      const isProjectWithTimeline = project.buildBlocks.implements(
-        BuildBlock.TIME_LINES,
-      )
-
-      if (isProjectWithFoundation) {
-        project.addDomainEvent(new ProjectCreatedWithFoundationEvent(project))
-      }
-
-      if (isProjectWithTimeline) {
-        project.addDomainEvent(new ProjectCreatedWithTimelineEvent(project))
-      }
-    }
 
     return project
   }
@@ -118,14 +99,6 @@ export class Project extends AggregateRoot<ProjectProps> {
   enableBuildBlock(buildBlock: BuildBlock) {
     this.props.buildBlocks.enable(buildBlock)
     this.touch()
-
-    if (buildBlock === BuildBlock.TIME_LINES) {
-      this.addDomainEvent(new ProjectCreatedWithTimelineEvent(this))
-    }
-
-    if (buildBlock === BuildBlock.FOUNDATION) {
-      this.addDomainEvent(new ProjectCreatedWithFoundationEvent(this))
-    }
   }
 
   moveToTrash() {

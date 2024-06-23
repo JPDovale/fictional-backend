@@ -1,32 +1,48 @@
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from '@infra/presenters/Error.presenter'
-// import { GetFoundationGateway } from '../gateways/GetFoundation.gateway'
-// import { GetFoundationService } from '../services/GetFoundation.service'
-// import { FoundationPresenter } from '../presenters/Foundation.presenter'
+import { Controller } from '@shared/core/contracts/Controller'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import {
+  Controller as ControllerNest,
+  Get,
+  HttpCode,
+  Param,
+} from '@nestjs/common'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
+import {
+  GetFoundationGateway,
+  GetFoundationParams,
+} from '../gateways/GetFoundation.gateway'
+import { GetFoundationService } from '../services/GetFoundation.service'
+import { FoundationPresenter } from '../presenters/Foundation.presenter'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
 
-// @Injectable()
-// export class GetFoundationController implements Controller<PresenterProps> {
-//   constructor(
-//     private readonly getFoundationGateway: GetFoundationGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly getFoundationService: GetFoundationService,
-//     private readonly foundationPresenter: FoundationPresenter,
-//   ) {}
+@ControllerNest('/projects/:projectId/foundations')
+export class GetFoundationController implements Controller<PresenterProps> {
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly getFoundationService: GetFoundationService,
+    private readonly foundationPresenter: FoundationPresenter,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body = this.getFoundationGateway.transform(_data)
+  @Get()
+  @HttpCode(StatusCode.OK)
+  async handle(
+    @Param(GetFoundationGateway) params: GetFoundationParams,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response = await this.getFoundationService.execute({
+      ...params,
+      userId: sub,
+    })
 
-//     const response = await this.getFoundationService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
+    const { foundation } = response.value
 
-//     const { foundation } = response.value
-
-//     return this.foundationPresenter.present(foundation)
-//   }
-// }
+    return this.foundationPresenter.present(foundation)
+  }
+}

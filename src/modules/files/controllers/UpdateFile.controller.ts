@@ -1,33 +1,56 @@
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from 'src/infra/requester/presenters/Error.presenter'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { UpdateFileGateway } from '../gateways/UpdateFile.gateway'
-// import { UpdateFileService } from '../services/UpdateFile.service'
-// import { FilePresenter } from '../presenters/File.presenter'
-// import { StatusCode } from '@shared/core/types/StatusCode'
+import {
+  Body,
+  Controller as ControllerNest,
+  HttpCode,
+  Param,
+  Put,
+} from '@nestjs/common'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import { Controller } from '@shared/core/contracts/Controller'
+import { UpdateFileService } from '../services/UpdateFile.service'
+import { FilePresenter } from '../presenters/File.presenter'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
+import {
+  UpdateFileBody,
+  UpdateFileBodyGateway,
+  UpdateFileParams,
+  UpdateFileParamsGateway,
+} from '../gateways/UpdateFile.gateway'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
+import { HTMLValidations } from '@providers/text/contracts/HMTLValidations'
 
-// @Injectable()
-// export class UpdateFileController implements Controller<PresenterProps> {
-//   constructor(
-//     private readonly updateFileGateway: UpdateFileGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly updateFileService: UpdateFileService,
-//     private readonly filePresenter: FilePresenter,
-//   ) {}
+@ControllerNest('/projects/:projectId/files/:fileId')
+export class UpdateFileController implements Controller<PresenterProps> {
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly updateFileService: UpdateFileService,
+    private readonly filePresenter: FilePresenter,
+    private readonly htmlValidations: HTMLValidations,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body = this.updateFileGateway.transform(_data)
+  @Put()
+  @HttpCode(StatusCode.OK)
+  async handle(
+    @Param(UpdateFileParamsGateway) params: UpdateFileParams,
+    @Body(UpdateFileBodyGateway) body: UpdateFileBody,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response = await this.updateFileService.execute({
+      ...body,
+      ...params,
+      content: this.htmlValidations.sanitize(body.content),
+      userId: sub,
+    })
 
-//     const response = await this.updateFileService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
+    const { file } = response.value
 
-//     const { file } = response.value
-
-//     return this.filePresenter.present(file, StatusCode.OK)
-//   }
-// }
+    return this.filePresenter.present(file, StatusCode.OK)
+  }
+}

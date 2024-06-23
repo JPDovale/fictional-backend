@@ -9,17 +9,22 @@ interface TimelineProps {
   projectId: UniqueId
   createdAt: Date
   updatedAt: Date | null
+  trashedAt: Date | null
 }
 
 export class Timeline extends AggregateRoot<TimelineProps> {
   static create(
-    props: Optional<TimelineProps, 'createdAt' | 'updatedAt' | 'events'>,
+    props: Optional<
+      TimelineProps,
+      'createdAt' | 'updatedAt' | 'trashedAt' | 'events'
+    >,
     id?: UniqueId,
   ) {
     const timelineProps: TimelineProps = {
       ...props,
       createdAt: props?.createdAt ?? new Date(),
       updatedAt: props?.updatedAt ?? null,
+      trashedAt: props?.trashedAt ?? null,
       events: props?.events ?? new TimelineEventsList(),
     }
 
@@ -46,5 +51,9 @@ export class Timeline extends AggregateRoot<TimelineProps> {
 
   get updatedAt() {
     return this.props.updatedAt
+  }
+
+  get trashedAt() {
+    return this.props.trashedAt
   }
 }

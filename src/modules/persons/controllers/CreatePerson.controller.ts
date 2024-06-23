@@ -1,33 +1,53 @@
-// import { Controller, Request } from '@shared/core/contracts/Controller'
-// import { Injectable } from '@nestjs/common'
-// import { ErrorPresenter } from 'src/infra/requester/presenters/Error.presenter'
-// import { PresenterProps } from '@shared/core/contracts/Presenter'
-// import { StatusCode } from '@shared/core/types/StatusCode'
-// import { CreatePersonGateway } from '../gateways/CreatePerson.gateway'
-// import { CreatePersonService } from '../services/CreatePerson.service'
-// import { PersonPresenter } from '../presenters/Person.presenter'
+import { Controller } from '@shared/core/contracts/Controller'
+import {
+  Body,
+  Controller as ControllerNest,
+  HttpCode,
+  Param,
+  Post,
+} from '@nestjs/common'
+import { PresenterProps } from '@shared/core/contracts/Presenter'
+import { StatusCode } from '@shared/core/types/StatusCode'
+import { CreatePersonService } from '../services/CreatePerson.service'
+import { PersonPresenter } from '../presenters/Person.presenter'
+import {
+  CreatePersonBody,
+  CreatePersonBodyGateway,
+  CreatePersonParams,
+  CreatePersonParamsGateway,
+} from '../gateways/CreatePerson.gateway'
+import { CurrentLoggedUserDecorator } from '@providers/auth/decorators/CurrentLoggedUser.decorator'
+import { TokenPayloadSchema } from '@providers/auth/strategys/JwtStrategy'
+import { ErrorPresenter } from '@infra/presenters/Error.presenter'
 
-// @Injectable()
-// export class CreatePersonController implements Controller<PresenterProps> {
-//   constructor(
-//     private readonly createPersonGateway: CreatePersonGateway,
-//     private readonly errorPresenter: ErrorPresenter,
-//     private readonly createPersonService: CreatePersonService,
-//     private readonly personPresenter: PersonPresenter,
-//   ) {}
+@ControllerNest('/projects/:projectId/persons')
+export class CreatePersonController implements Controller<PresenterProps> {
+  constructor(
+    private readonly errorPresenter: ErrorPresenter,
+    private readonly createPersonService: CreatePersonService,
+    private readonly personPresenter: PersonPresenter,
+  ) {}
 
-//   async handle({ _data }: Request): Promise<PresenterProps> {
-//     const body = this.createPersonGateway.transform(_data)
+  @Post()
+  @HttpCode(StatusCode.CREATED)
+  async handle(
+    @Body(CreatePersonBodyGateway) body: CreatePersonBody,
+    @Param(CreatePersonParamsGateway) params: CreatePersonParams,
+    @CurrentLoggedUserDecorator() { sub }: TokenPayloadSchema,
+  ): Promise<PresenterProps> {
+    const response = await this.createPersonService.execute({
+      ...body,
+      ...params,
+      userId: sub,
+    })
 
-//     const response = await this.createPersonService.execute(body)
+    if (response.isLeft()) {
+      const error = response.value
+      return this.errorPresenter.present(error)
+    }
 
-//     if (response.isLeft()) {
-//       const error = response.value
-//       return this.errorPresenter.present(error)
-//     }
+    const { person } = response.value
 
-//     const { person } = response.value
-
-//     return this.personPresenter.present(person, StatusCode.CREATED)
-//   }
-// }
+    return this.personPresenter.present(person, StatusCode.CREATED)
+  }
+}

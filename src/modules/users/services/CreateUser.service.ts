@@ -12,10 +12,6 @@ type Request = {
   email: string
   password: string
   photoUrl?: string | null
-  accessToken?: string | null
-  skipLogin?: boolean
-  verified?: boolean
-  authId?: string | null
 }
 
 type PossibleErrors =
@@ -39,10 +35,6 @@ export class CreateUserService
     name,
     email,
     password,
-    authId,
-    skipLogin,
-    accessToken,
-    verified,
   }: Request): Promise<Either<PossibleErrors, Response>> {
     const _user = await this.userRepository.findByEmail(email)
     if (_user) {
@@ -54,11 +46,7 @@ export class CreateUserService
     const user = User.create({
       name,
       email,
-      authId,
       password: hashedPassword,
-      verified,
-      skipLogin,
-      accessToken,
     })
 
     await this.userRepository.create(user)

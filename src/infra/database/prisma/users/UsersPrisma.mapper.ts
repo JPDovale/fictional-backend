@@ -1,12 +1,16 @@
 import { User } from '@modules/users/entities/User'
-import { User as UserFile } from '@prisma/client'
+import { Prisma, User as UserFile } from '@prisma/client'
 import { Injectable } from '@nestjs/common'
 import { RepositoryMapper } from '@shared/core/contracts/Repository'
 import { Username } from '@modules/users/valueObjects/Username'
 import { UniqueId } from '@shared/core/valueObjects/UniqueId'
 
 @Injectable()
-export class UsersPrismaMapper extends RepositoryMapper<User, UserFile> {
+export class UsersPrismaMapper extends RepositoryMapper<
+  User,
+  UserFile,
+  Prisma.UserUncheckedCreateInput
+> {
   toDomain(raw: UserFile): User {
     return User.create(
       {
@@ -18,16 +22,14 @@ export class UsersPrismaMapper extends RepositoryMapper<User, UserFile> {
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt,
         deletedAt: raw.deletedAt,
-        // verified: raw.verified,
-        // skipLogin: raw.skip_login,
-        // authId: raw.auth_id,
-        // accessToken: raw.access_token,
+        verified: raw.verified,
+        authId: raw.authId,
       },
       UniqueId.create(raw.id),
     )
   }
 
-  toPersistence(entity: User): UserFile {
+  toPersistence(entity: User): Prisma.UserUncheckedCreateInput {
     return {
       id: entity.id.toString(),
       createdAt: entity.createdAt,
@@ -37,11 +39,9 @@ export class UsersPrismaMapper extends RepositoryMapper<User, UserFile> {
       name: entity.name,
       password: entity.password,
       updatedAt: entity.updatedAt,
+      authId: entity.authId,
+      verified: entity.verified,
       username: entity.username.toString(),
-      // auth_id: entity.authId,
-      // access_token: entity.accessToken,
-      // verified: entity.verified,
-      // skip_login: entity.skipLogin,
     }
   }
 }

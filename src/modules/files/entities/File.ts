@@ -8,15 +8,20 @@ interface FileProps {
   projectId: UniqueId
   createdAt: Date
   updatedAt: Date | null
+  trashedAt: Date | null
 }
 
 export class File extends AggregateRoot<FileProps> {
   static create(
-    props: Optional<FileProps, 'createdAt' | 'updatedAt' | 'content' | 'title'>,
+    props: Optional<
+      FileProps,
+      'createdAt' | 'updatedAt' | 'content' | 'title' | 'trashedAt'
+    >,
     id?: UniqueId,
   ) {
     const fileProps: FileProps = {
       ...props,
+      trashedAt: props.trashedAt ?? null,
       title: props.title ?? 'Untitled',
       content: props.content ?? '',
       createdAt: props.createdAt ?? new Date(),
@@ -66,6 +71,10 @@ export class File extends AggregateRoot<FileProps> {
 
   get updatedAt() {
     return this.props.updatedAt
+  }
+
+  get trashedAt() {
+    return this.props.trashedAt
   }
 
   touch() {

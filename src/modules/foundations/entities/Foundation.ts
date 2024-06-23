@@ -10,6 +10,7 @@ interface FoundationProps {
   whoHappens: string
   createdAt: Date
   updatedAt: Date | null
+  trashedAt: Date | null
   projectId: UniqueId
 }
 
@@ -24,6 +25,7 @@ export class Foundation extends AggregateRoot<FoundationProps> {
       | 'whatHappens'
       | 'whereHappens'
       | 'foundation'
+      | 'trashedAt'
     >,
     id?: UniqueId,
   ) {
@@ -36,6 +38,7 @@ export class Foundation extends AggregateRoot<FoundationProps> {
       whereHappens: props.whereHappens ?? '',
       whoHappens: props.whoHappens ?? '',
       foundation: props.foundation ?? '',
+      trashedAt: props.trashedAt ?? null,
     }
 
     const foundation = new Foundation(foundationProps, id)
@@ -144,6 +147,10 @@ export class Foundation extends AggregateRoot<FoundationProps> {
 
   get updatedAt() {
     return this.props.updatedAt
+  }
+
+  get trashedAt() {
+    return this.props.trashedAt
   }
 
   get projectId() {

@@ -10,12 +10,10 @@ export interface UserProps {
   name: string
   username: Username
   email: string
-  password: string
+  password: string | null
   authId: string | null
   imageUrl: string | null
-  accessToken: string | null
   verified: boolean
-  skipLogin: boolean
   createdAt: Date
   updatedAt: Date | null
   deletedAt: Date | null
@@ -34,10 +32,9 @@ export class User extends Entity<UserProps> {
       | 'updatedAt'
       | 'authId'
       | 'imageUrl'
-      | 'skipLogin'
       | 'verified'
-      | 'accessToken'
       | 'deletedAt'
+      | 'password'
     >,
     id?: UniqueId,
   ) {
@@ -47,12 +44,10 @@ export class User extends Entity<UserProps> {
       username: props.username ?? Username.create(props.name),
       email: props.email,
       name: props.name,
-      password: props.password,
-      accessToken: props.accessToken ?? null,
+      password: props.password ?? null,
       authId: props.authId ?? null,
       imageUrl: props.imageUrl ?? null,
       verified: props.verified ?? false,
-      skipLogin: props.skipLogin ?? false,
       deletedAt: props.deletedAt ?? null,
     }
 
@@ -119,17 +114,6 @@ export class User extends Entity<UserProps> {
     this.touch()
   }
 
-  get accessToken(): string | null {
-    return this.props.accessToken
-  }
-
-  set accessToken(accessToken: string | null | undefined) {
-    if (accessToken === undefined) return
-
-    this.props.accessToken = accessToken
-    this.touch()
-  }
-
   get imageUrl(): string | null {
     return this.props.imageUrl
   }
@@ -152,18 +136,7 @@ export class User extends Entity<UserProps> {
     this.touch()
   }
 
-  get skipLogin(): boolean {
-    return this.props.skipLogin
-  }
-
-  set skipLogin(skipLogin: boolean | undefined) {
-    if (skipLogin === undefined) return
-
-    this.props.skipLogin = skipLogin
-    this.touch()
-  }
-
-  get password(): string {
+  get password(): string | null {
     return this.props.password
   }
 

@@ -6,7 +6,7 @@ export abstract class Repository<T, K = unknown> {
   abstract delete(id: string, ctx?: K): Promise<void>
 }
 
-export abstract class RepositoryMapper<T, K> {
+export abstract class RepositoryMapper<T, K, J = K> {
   abstract toDomain(raw: K): T
-  abstract toPersistence(entity: T): K
+  abstract toPersistence(entity: T): J
 }

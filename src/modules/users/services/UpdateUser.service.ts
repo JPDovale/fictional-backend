@@ -13,8 +13,6 @@ type Request = {
   name?: string
   email?: string
   photoUrl?: string | null
-  accessToken?: string | null
-  skipLogin?: boolean
   verified?: boolean
   authId?: string | null
 }
@@ -43,9 +41,7 @@ export class UpdateUserService
     userId,
     authId,
     photoUrl,
-    skipLogin,
     verified,
-    accessToken,
   }: Request): Promise<Either<PossibleErrors, Response>> {
     const user = await this.userRepository.findById(userId)
     if (!user) {
@@ -75,10 +71,8 @@ export class UpdateUserService
     user.name = name
     user.email = email
     user.imageUrl = imageSecure?.savedName
-    user.skipLogin = skipLogin
     user.verified = verified
     user.username = name
-    user.accessToken = accessToken
 
     await this.userRepository.save(user)
 

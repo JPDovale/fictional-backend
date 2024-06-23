@@ -29,10 +29,10 @@ export class CreateAffiliationService
     private readonly affiliationsRepository: AffiliationsRepository,
   ) {}
 
-  async execute({
-    fatherId,
-    motherId,
-  }: Request): Promise<Either<PossibleErrors, Response>> {
+  async execute(
+    { fatherId, motherId }: Request,
+    ctx?: unknown,
+  ): Promise<Either<PossibleErrors, Response>> {
     if (!fatherId && !motherId) {
       return left(new ProjectActionBlocked())
     }
@@ -58,7 +58,7 @@ export class CreateAffiliationService
       motherId: motherId ? UniqueId.create(motherId) : null,
     })
 
-    await this.affiliationsRepository.create(affiliation)
+    await this.affiliationsRepository.create(affiliation, ctx)
 
     return right({ affiliation })
   }

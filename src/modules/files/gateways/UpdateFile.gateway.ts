@@ -1,13 +1,26 @@
 import { ZodValidationPipe } from '@shared/pipes/ZodValidation'
 import { z } from 'zod'
 
-const updateFileSchema = z.object({
-  title: z.string().trim().max(120).optional().nullable(),
+const updateFileBodySchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .max(120)
+    .optional()
+    .nullable(),
   content: z.string().trim().optional().nullable(),
-  userId: z.string().trim().uuid(),
+})
+
+export type UpdateFileBody = z.infer<typeof updateFileBodySchema>
+export const UpdateFileBodyGateway = new ZodValidationPipe(updateFileBodySchema)
+
+const updateFileParamsSchema = z.object({
   projectId: z.string().trim().uuid(),
   fileId: z.string().trim().uuid(),
 })
 
-export type UpdateFileBody = z.infer<typeof updateFileSchema>
-export const UpdateFileGateway = new ZodValidationPipe(updateFileSchema)
+export type UpdateFileParams = z.infer<typeof updateFileParamsSchema>
+export const UpdateFileParamsGateway = new ZodValidationPipe(
+  updateFileParamsSchema,
+)
