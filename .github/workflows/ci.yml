@@ -34,4 +34,4 @@ jobs:
           ARGS: "-rlgoDzvc -i"
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          TARGET: "/home/joao/fictionalapi/"
+          TARGET: "/home/joao/temp/fictionalapi/"
