@@ -1,8 +1,9 @@
 {
-  "extends": [
-    "@vortecx/eslint-config/node"
-  ],
+  "extends": ["@vortecx/eslint-config/node"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ]
   }
 }
