@@ -6,14 +6,14 @@ const createProjectSchema = z.object({
   name: z
     .string()
     .trim()
-    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .regex(/^[a-zA-Z0-9\s._@-\u00C0-\u00FF\u0100-\u017F\u0180-\u024F]+$/)
     .min(3)
     .max(255),
   image: z
     .string()
     .trim()
     .max(512)
-    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .regex(/^[a-zA-Z0-9\s._@-\u00C0-\u00FF\u0100-\u017F\u0180-\u024F]+$/)
     .optional(),
   buildBlocks: z.array(z.nativeEnum(BuildBlock)),
 })

@@ -5,7 +5,7 @@ const updateFileBodySchema = z.object({
   title: z
     .string()
     .trim()
-    .regex(/^[a-zA-Z0-9\s._@-]+$/)
+    .regex(/^[a-zA-Z0-9\s._@-\u00C0-\u00FF\u0100-\u017F\u0180-\u024F]+$/)
     .max(120)
     .optional()
     .nullable(),
