@@ -6,11 +6,11 @@ const loginUserSchema = z.object({
     .string()
     .trim()
     .email()
-    .regex(/^[a-zA-Z0-9\s._@-\u00C0-\u00FF\u0100-\u017F\u0180-\u024F]+$/),
+    .regex(/^[a-zA-Z0-9\s._@\-À-ÿ]+$/),
   password: z
     .string()
     .trim()
-    .regex(/^[a-zA-Z0-9\s._@-\u00C0-\u00FF\u0100-\u017F\u0180-\u024F]+$/)
+    .regex(/^[a-zA-Z0-9\s._@\-À-ÿ]+$/)
     .min(8)
     .max(255),
 })
