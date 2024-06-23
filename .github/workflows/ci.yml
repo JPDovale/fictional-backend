@@ -1,4 +1,4 @@
-name: Continuous integrations Ognare
+name: Continuous integrations
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 20
           cache: "yarn"
-          cache-dependency-path: "**"
+          cache-dependency-path: "yarn.lock"
 
       - run: yarn
 
