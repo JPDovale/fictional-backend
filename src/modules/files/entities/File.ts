@@ -6,6 +6,7 @@ interface FileProps {
   title: string
   content: string
   projectId: UniqueId
+  folderId: UniqueId | null
   createdAt: Date
   updatedAt: Date | null
   trashedAt: Date | null
@@ -15,7 +16,7 @@ export class File extends AggregateRoot<FileProps> {
   static create(
     props: Optional<
       FileProps,
-      'createdAt' | 'updatedAt' | 'content' | 'title' | 'trashedAt'
+      'createdAt' | 'updatedAt' | 'content' | 'title' | 'trashedAt' | 'folderId'
     >,
     id?: UniqueId,
   ) {
@@ -26,6 +27,7 @@ export class File extends AggregateRoot<FileProps> {
       content: props.content ?? '',
       createdAt: props.createdAt ?? new Date(),
       updatedAt: props.updatedAt ?? null,
+      folderId: props.folderId ?? null,
     }
 
     const file = new File(fileProps, id)
@@ -63,6 +65,10 @@ export class File extends AggregateRoot<FileProps> {
 
   get projectId() {
     return this.props.projectId
+  }
+
+  get folderId() {
+    return this.props.folderId
   }
 
   get createdAt() {

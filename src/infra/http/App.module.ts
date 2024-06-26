@@ -1,6 +1,7 @@
 import { envSchema } from '@infra/env'
 import { EnvModule } from '@infra/env/Env.module'
 import { FilesModule } from '@modules/files/Files.module'
+import { FoldersModule } from '@modules/folders/Folders.module'
 import { FoundationsModule } from '@modules/foundations/Foundations.module'
 import { PersonsModule } from '@modules/persons/Persons.module'
 import { ProjectsModule } from '@modules/projects/Projects.module'
@@ -25,6 +26,7 @@ import { AuthModule } from '@providers/auth/Auth.module'
     PersonsModule,
     TimelinesModule,
     FilesModule,
+    FoldersModule,
   ],
 })
 export class AppModule {}
