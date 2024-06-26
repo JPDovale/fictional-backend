@@ -40,6 +40,9 @@ import { EventsToPersonRepository } from '@modules/timelines/repositories/Events
 import { EventsToPersonPrismaRepository } from './prisma/timelines/EventsToPersonPrisma.repository'
 import { TimelinesRepository } from '@modules/timelines/repositories/Timelines.repository'
 import { TimelinesPrismaRepository } from './prisma/timelines/TimelinesPrisma.repository'
+import { FoldersPrismaMapper } from './prisma/folders/FoldersPrisma.mapper'
+import { FoldersRepository } from '@modules/folders/repositories/Folders.repository'
+import { FoldersPrismaRepository } from './prisma/folders/FoldersPrisma.repository'
 
 @Module({
   providers: [
@@ -126,6 +129,13 @@ import { TimelinesPrismaRepository } from './prisma/timelines/TimelinesPrisma.re
       provide: TimelinesRepository,
       useClass: TimelinesPrismaRepository,
     },
+
+    // Folders
+    FoldersPrismaMapper,
+    {
+      provide: FoldersRepository,
+      useClass: FoldersPrismaRepository,
+    },
   ],
   exports: [
     PrismaService,
@@ -143,6 +153,7 @@ import { TimelinesPrismaRepository } from './prisma/timelines/TimelinesPrisma.re
     EventsRepository,
     EventsToPersonRepository,
     TimelinesRepository,
+    FoldersRepository,
   ],
 })
 export class DatabaseModule {}
