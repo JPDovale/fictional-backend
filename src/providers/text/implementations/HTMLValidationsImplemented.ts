@@ -69,10 +69,12 @@ export class HTMLValidationsImplemented implements HTMLValidations {
         'li',
         'hr',
         'ul',
+        'a',
       ],
       allowedAttributes: {
         '*': ['href', 'target', 'rel', 'style', 'class', 'data-color', 'id'],
         span: ['data-type', 'data-id'],
+        a: ['href', 'target', 'rel'],
       },
     })
 
