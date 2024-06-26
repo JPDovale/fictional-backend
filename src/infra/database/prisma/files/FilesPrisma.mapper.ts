@@ -19,6 +19,7 @@ export class FilesPrismaMapper extends RepositoryMapper<
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt,
         trashedAt: raw.deletedAt,
+        folderId: raw.folderId ? UniqueId.create(raw.folderId) : null,
       },
       UniqueId.create(raw.id),
     )
@@ -33,6 +34,7 @@ export class FilesPrismaMapper extends RepositoryMapper<
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       deletedAt: entity.trashedAt,
+      folderId: entity.folderId?.toString() ?? null,
     }
   }
 }
