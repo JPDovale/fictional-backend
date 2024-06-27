@@ -5,8 +5,17 @@ const getUploadUrlSchema = z.object({
   filename: z
     .string()
     .trim()
-    .regex(/^[a-zA-Z0-9\s._@\-À-ÿ]+$/)
-    .max(255),
+    .transform((text) =>
+      text
+        .toLowerCase()
+        .trim()
+        .replaceAll('  ', ' ')
+        .normalize('NFD')
+        .replace(/^[a-zA-Z0-9\s._@\-À-ÿ]/g, '')
+        .replace(/\s+/g, '-')
+        .replaceAll('--', '-')
+        .trim(),
+    ),
   contentType: z
     .string()
     .trim()
