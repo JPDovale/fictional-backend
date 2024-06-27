@@ -9,13 +9,21 @@ import { UpdateFileController } from './controllers/UpdateFile.controller'
 import { TextModule } from '@providers/text/Text.module'
 import { CreateFileController } from './controllers/CreateFile.controller'
 import { CreateFileService } from './services/CreateFile.service'
+import { DeleteFileService } from './services/DeleteFile.service'
+import { DeleteFileController } from './controllers/DeleteFile.controller'
 
 @Module({
   imports: [DatabaseModule, TextModule],
-  controllers: [GetFileController, UpdateFileController, CreateFileController],
+  controllers: [
+    GetFileController,
+    UpdateFileController,
+    CreateFileController,
+    DeleteFileController,
+  ],
   providers: [
     GetFileService,
     UpdateFileService,
+    DeleteFileService,
     CreateFileService,
     ErrorPresenter,
     FilePresenter,

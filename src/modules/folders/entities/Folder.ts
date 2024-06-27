@@ -2,12 +2,14 @@ import { AggregateRoot } from '@shared/core/entities/AggregateRoot'
 import { UniqueId } from '@shared/core/valueObjects/UniqueId'
 import { FolderChildsList } from './FolderChildsList'
 import { Optional } from '@shared/core/types/Optional'
+import { FolderFilesList } from './FolderFilesList'
 
 interface FolderProps {
   name: string
   projectId: UniqueId
   parentId: UniqueId | null
   childs: FolderChildsList
+  files: FolderFilesList
   createdAt: Date
   updatedAt: Date | null
   trashedAt: Date | null
@@ -17,7 +19,13 @@ export class Folder extends AggregateRoot<FolderProps> {
   static create(
     props: Optional<
       FolderProps,
-      'name' | 'parentId' | 'createdAt' | 'trashedAt' | 'updatedAt' | 'childs'
+      | 'name'
+      | 'parentId'
+      | 'createdAt'
+      | 'trashedAt'
+      | 'updatedAt'
+      | 'childs'
+      | 'files'
     >,
     id?: UniqueId,
   ) {
@@ -29,6 +37,7 @@ export class Folder extends AggregateRoot<FolderProps> {
       parentId: props.parentId ?? null,
       name: props.name ?? 'Untitled',
       childs: props.childs ?? new FolderChildsList(),
+      files: props.files ?? new FolderFilesList(),
     }
 
     const folder = new Folder(folderProps, id)
@@ -59,6 +68,10 @@ export class Folder extends AggregateRoot<FolderProps> {
     return this.props.childs
   }
 
+  get files() {
+    return this.props.files
+  }
+
   get createdAt() {
     return this.props.createdAt
   }
@@ -73,5 +86,9 @@ export class Folder extends AggregateRoot<FolderProps> {
 
   touch() {
     this.props.updatedAt = new Date()
+  }
+
+  moveToTrash() {
+    this.props.trashedAt = new Date()
   }
 }

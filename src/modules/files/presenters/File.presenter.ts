@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common'
 export interface FileResponse {
   id: string
   title: string
+  folderId?: string | null
   content: string
   projectId: string
   createdAt: Date
@@ -29,6 +30,7 @@ export class FilePresenter
       id: raw.id.toString(),
       title: raw.title,
       content: raw.content,
+      folderId: raw.folderId?.toString() ?? null,
       projectId: raw.projectId.toString(),
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,

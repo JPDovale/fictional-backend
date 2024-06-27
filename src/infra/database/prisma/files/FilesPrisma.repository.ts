@@ -42,6 +42,14 @@ export class FilesPrismaRepository implements FilesRepository<PrismaContext> {
     })
   }
 
+  async saveMany(
+    files: File[],
+    ctx?: PrismaContext | undefined,
+  ): Promise<void> {
+    const promises = files.map((file) => this.save(file, ctx))
+    await Promise.all(promises)
+  }
+
   delete(_id: string, _ctx?: PrismaContext): Promise<void> {
     throw new Error('Method not implemented.')
   }
