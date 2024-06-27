@@ -1,10 +1,12 @@
 import { Folder } from '@modules/folders/entities/Folder'
-import { Folder as FolderFile, Prisma } from '@prisma/client'
+import { Folder as FolderFile, Prisma, File as FileFile } from '@prisma/client'
 import { Injectable } from '@nestjs/common'
 import { RepositoryMapper } from '@shared/core/contracts/Repository'
 import { UniqueId } from '@shared/core/valueObjects/UniqueId'
 import { FolderChildsList } from '@modules/folders/entities/FolderChildsList'
 import { FolderWithChilds } from '@modules/folders/valueObjects/FolderWithChilds'
+import { FilesPrismaMapper } from '../files/FilesPrisma.mapper'
+import { FolderFilesList } from '@modules/folders/entities/FolderFilesList'
 
 export interface FolderWithChildsFile extends FolderFile {
   childs: FolderWithChildsFile[]
@@ -14,12 +16,21 @@ export interface FolderWithChildsFile extends FolderFile {
   }[]
 }
 
+interface FolderWithChildsAndFilesFile extends FolderFile {
+  childs: FolderFile[]
+  files: FileFile[]
+}
+
 @Injectable()
 export class FoldersPrismaMapper extends RepositoryMapper<
   Folder,
   FolderFile,
   Prisma.FolderUncheckedCreateInput
 > {
+  constructor(private readonly filesMapper: FilesPrismaMapper) {
+    super()
+  }
+
   toDomain(raw: FolderFile): Folder {
     return Folder.create(
       {
@@ -62,6 +73,28 @@ export class FoldersPrismaMapper extends RepositoryMapper<
         })),
         childs: raw.childs.map(map),
       })
+    }
+
+    return map(raw)
+  }
+
+  toDomainWihtChildsAndFiles(raw: FolderWithChildsAndFilesFile): Folder {
+    const toFileDomain = this.filesMapper.toDomain
+
+    function map(raw: FolderWithChildsAndFilesFile): Folder {
+      return Folder.create(
+        {
+          name: raw.name,
+          parentId: raw.parentId ? UniqueId.create(raw.parentId) : null,
+          projectId: UniqueId.create(raw.projectId),
+          childs: new FolderChildsList(raw.childs?.map(map)),
+          files: new FolderFilesList(raw.files?.map(toFileDomain)),
+          createdAt: raw.createdAt,
+          updatedAt: raw.updatedAt,
+          trashedAt: raw.deletedAt,
+        },
+        UniqueId.create(raw.id),
+      )
     }
 
     return map(raw)

@@ -10,4 +10,6 @@ export abstract class FoldersRepository<T = unknown> extends Repository<
     projectId: string,
     ctx?: T,
   ): Promise<FolderWithChilds[]>
+
+  abstract saveMany(folders: Folder[], ctx?: T): Promise<void>
 }

@@ -10,6 +10,8 @@ import { FolderPresenter } from './presenters/Folder.presenter'
 import { FolderWithChildsPresenter } from './presenters/FolderWithChilds.presenter'
 import { UpdateFolderController } from './controllers/UpdateFolder.controller'
 import { UpdateFolderService } from './services/UpdateFolder.service'
+import { DeleteFolderController } from './controllers/DeleteFolder.controller'
+import { DeleteFoldersService } from './services/DeleteFolders.service'
 
 @Module({
   imports: [DatabaseModule],
@@ -17,11 +19,13 @@ import { UpdateFolderService } from './services/UpdateFolder.service'
     CreateFolderController,
     GetFoldersController,
     UpdateFolderController,
+    DeleteFolderController,
   ],
   providers: [
     CreateFolderService,
     GetFoldersService,
     UpdateFolderService,
+    DeleteFoldersService,
     ErrorPresenter,
     EmptyPresenter,
     FolderPresenter,

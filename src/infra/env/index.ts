@@ -23,6 +23,7 @@ export const envSchema = z.object({
   ACCEPT_ORIGINS: z.string().transform((origins) => origins.split(',')),
   NEW_RELIC_APP_NAME: z.string(),
   NEW_RELIC_LICENSE_KEY: z.string(),
+  STRIPE_API_KEY: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>

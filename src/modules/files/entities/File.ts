@@ -86,4 +86,8 @@ export class File extends AggregateRoot<FileProps> {
   touch() {
     this.props.updatedAt = new Date()
   }
+
+  moveToTrash() {
+    this.props.trashedAt = new Date()
+  }
 }

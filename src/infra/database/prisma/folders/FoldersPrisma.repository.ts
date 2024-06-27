@@ -28,11 +28,25 @@ export class FoldersPrismaRepository
   async findById(id: string, ctx?: PrismaContext): Promise<Folder | null> {
     const db = ctx?.prisma ?? this.prisma
 
-    const folder = await db.folder.findUnique({ where: { id } })
+    const folder = await db.folder.findUnique({
+      where: { id },
+      include: {
+        childs: {
+          where: {
+            deletedAt: null,
+          },
+        },
+        files: {
+          where: {
+            deletedAt: null,
+          },
+        },
+      },
+    })
 
     if (!folder) return null
 
-    return this.mapper.toDomain(folder)
+    return this.mapper.toDomainWihtChildsAndFiles(folder)
   }
 
   findAll(_ctx?: PrismaContext): Promise<Folder[]> {
@@ -57,12 +71,16 @@ export class FoldersPrismaRepository
     const foldersQuery = await db.folder.findMany({
       where: {
         projectId,
+        deletedAt: null,
       },
       orderBy: {
         name: 'asc',
       },
       include: {
         files: {
+          where: {
+            deletedAt: null,
+          },
           select: {
             id: true,
             title: true,
@@ -93,6 +111,15 @@ export class FoldersPrismaRepository
     const folders = buildHierarchy(foldersQuery)
 
     return folders.map(this.mapper.toDomainWithChilds)
+  }
+
+  async saveMany(
+    folders: Folder[],
+    ctx?: PrismaContext | undefined,
+  ): Promise<void> {
+    const promises = folders.map((folder) => this.save(folder, ctx))
+
+    await Promise.all(promises)
   }
 
   delete(_id: string, _ctx?: PrismaContext): Promise<void> {
