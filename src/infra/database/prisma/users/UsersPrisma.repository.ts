@@ -3,6 +3,7 @@ import { UsersRepository } from '@modules/users/repositories/Users.repository'
 import { PrismaContext, PrismaService } from '../Prisma.service'
 import { User } from '@modules/users/entities/User'
 import { UsersPrismaMapper } from './UsersPrisma.mapper'
+import { Subscription } from '@modules/products/entities/Subscription'
 
 @Injectable()
 export class UsersPrismaRepository implements UsersRepository<PrismaContext> {
@@ -45,6 +46,29 @@ export class UsersPrismaRepository implements UsersRepository<PrismaContext> {
       where: {
         id,
       },
+      include: {
+        subscription: true,
+      },
+    })
+
+    if (!user) return null
+
+    return this.mapper.toDomain(user)
+  }
+
+  async findByCustomerId(
+    customerId: string,
+    ctx?: PrismaContext | undefined,
+  ): Promise<User | null> {
+    const db = ctx?.prisma ?? this.prisma
+
+    const user = await db.user.findUnique({
+      where: {
+        customerId,
+      },
+      include: {
+        subscription: true,
+      },
     })
 
     if (!user) return null
@@ -69,5 +93,18 @@ export class UsersPrismaRepository implements UsersRepository<PrismaContext> {
 
   delete(_id: string, _ctx?: PrismaContext | undefined): Promise<void> {
     throw new Error('Method not implemented.')
+  }
+
+  async createSubscription(subscription: Subscription): Promise<void> {
+    await this.prisma.subscription.create({
+      data: this.mapper.subscriptionToPersistence(subscription),
+    })
+  }
+
+  async saveSubscription(subscription: Subscription): Promise<void> {
+    await this.prisma.subscription.update({
+      where: { id: subscription.id.toString() },
+      data: this.mapper.subscriptionToPersistence(subscription),
+    })
   }
 }

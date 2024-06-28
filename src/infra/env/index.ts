@@ -24,6 +24,9 @@ export const envSchema = z.object({
   NEW_RELIC_APP_NAME: z.string(),
   NEW_RELIC_LICENSE_KEY: z.string(),
   STRIPE_API_KEY: z.string(),
+  STRIPE_SUCCESS_URL: z.string().url(),
+  STRIPE_CANCEL_URL: z.string().url(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>

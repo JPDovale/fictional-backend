@@ -1,18 +1,35 @@
 import { User } from '@modules/users/entities/User'
-import { Prisma, User as UserFile } from '@prisma/client'
+import {
+  Prisma,
+  User as UserFile,
+  Subscription as SubscriptionFile,
+  SubscriptionStatus as SubscriptionStatusFile,
+} from '@prisma/client'
 import { Injectable } from '@nestjs/common'
 import { RepositoryMapper } from '@shared/core/contracts/Repository'
 import { Username } from '@modules/users/valueObjects/Username'
 import { UniqueId } from '@shared/core/valueObjects/UniqueId'
+import {
+  Subscription,
+  SubscriptionStatus,
+} from '@modules/products/entities/Subscription'
+
+type UserWithSubscriptionFile = UserFile & {
+  subscription?: SubscriptionFile | null
+}
 
 @Injectable()
 export class UsersPrismaMapper extends RepositoryMapper<
   User,
-  UserFile,
+  UserWithSubscriptionFile,
   Prisma.UserUncheckedCreateInput
 > {
-  toDomain(raw: UserFile): User {
-    return User.create(
+  toDomain(raw: UserWithSubscriptionFile): User {
+    const subscription = raw.subscription
+      ? this.subscriptionToDomain(raw.subscription)
+      : null
+
+    const user = User.create(
       {
         name: raw.name,
         username: Username.create(raw.username),
@@ -24,9 +41,13 @@ export class UsersPrismaMapper extends RepositoryMapper<
         deletedAt: raw.deletedAt,
         verified: raw.verified,
         authId: raw.authId,
+        subscription,
+        customerId: raw.customerId,
       },
       UniqueId.create(raw.id),
     )
+
+    return user
   }
 
   toPersistence(entity: User): Prisma.UserUncheckedCreateInput {
@@ -42,6 +63,39 @@ export class UsersPrismaMapper extends RepositoryMapper<
       authId: entity.authId,
       verified: entity.verified,
       username: entity.username.toString(),
+      customerId: entity.customerId,
     }
+  }
+
+  subscriptionToPersistence(
+    sub: Subscription,
+  ): Prisma.SubscriptionUncheckedCreateInput {
+    return {
+      id: sub.id.toString(),
+      priceId: sub.priceId,
+      createdAt: sub.createdAt,
+      expiredAt: sub.expiredAt,
+      status: sub.status as SubscriptionStatusFile,
+      deletedAt: sub.trashedAt,
+      subscriptionId: sub.subscriptionId.toString(),
+      userId: sub.userId.toString(),
+      updatedAt: sub.updatedAt,
+    }
+  }
+
+  subscriptionToDomain(sub: SubscriptionFile): Subscription {
+    return Subscription.create(
+      {
+        priceId: sub.priceId,
+        status: sub.status as SubscriptionStatus,
+        createdAt: sub.createdAt,
+        expiredAt: sub.expiredAt,
+        trashedAt: sub.deletedAt,
+        subscriptionId: sub.subscriptionId,
+        userId: UniqueId.create(sub.userId),
+        updatedAt: sub.updatedAt,
+      },
+      UniqueId.create(sub.id),
+    )
   }
 }

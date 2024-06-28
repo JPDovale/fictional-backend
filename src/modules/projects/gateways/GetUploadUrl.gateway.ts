@@ -9,11 +9,8 @@ const getUploadUrlSchema = z.object({
       text
         .toLowerCase()
         .trim()
-        .replaceAll('  ', ' ')
         .normalize('NFD')
-        .replace(/^[a-zA-Z0-9\s._@\-À-ÿ]/g, '')
-        .replace(/\s+/g, '-')
-        .replaceAll('--', '-')
+        .replace(/[^a-zA-Z0-9]/g, '')
         .trim(),
     ),
   contentType: z
