@@ -4,6 +4,7 @@ import { FilesModule } from '@modules/files/Files.module'
 import { FoldersModule } from '@modules/folders/Folders.module'
 import { FoundationsModule } from '@modules/foundations/Foundations.module'
 import { PersonsModule } from '@modules/persons/Persons.module'
+import { ProductsModule } from '@modules/products/Products.module'
 import { ProjectsModule } from '@modules/projects/Projects.module'
 import { TimelinesModule } from '@modules/timelines/Timelines.module'
 import { UsersModule } from '@modules/users/Users.module'
@@ -27,6 +28,7 @@ import { AuthModule } from '@providers/auth/Auth.module'
     TimelinesModule,
     FilesModule,
     FoldersModule,
+    ProductsModule,
   ],
 })
 export class AppModule {}

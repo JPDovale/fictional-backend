@@ -1,6 +1,7 @@
 import { StatusCode } from '../types/StatusCode'
 
 export type PresenterProps<T = unknown> = {
+  received?: boolean
   data?: T
   title?: string
   message?: string

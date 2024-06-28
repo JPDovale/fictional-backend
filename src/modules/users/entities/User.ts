@@ -2,13 +2,19 @@ import { Entity } from '@shared/core/entities/Entity'
 import { Optional } from '@shared/core/types/Optional'
 import { UniqueId } from '@shared/core/valueObjects/UniqueId'
 import { Username } from '../valueObjects/Username'
+import {
+  Subscription,
+  SubscriptionStatus,
+} from '@modules/products/entities/Subscription'
 
 /**
  * @template UserProps - Properties in user
  */
 export interface UserProps {
   name: string
+  customerId: string | null
   username: Username
+  subscription: Subscription | null
   email: string
   password: string | null
   authId: string | null
@@ -35,6 +41,8 @@ export class User extends Entity<UserProps> {
       | 'verified'
       | 'deletedAt'
       | 'password'
+      | 'customerId'
+      | 'subscription'
     >,
     id?: UniqueId,
   ) {
@@ -44,11 +52,13 @@ export class User extends Entity<UserProps> {
       username: props.username ?? Username.create(props.name),
       email: props.email,
       name: props.name,
+      customerId: props.customerId ?? null,
       password: props.password ?? null,
       authId: props.authId ?? null,
       imageUrl: props.imageUrl ?? null,
       verified: props.verified ?? false,
       deletedAt: props.deletedAt ?? null,
+      subscription: props.subscription ?? null,
     }
 
     const user = new User(propsUser, id)
@@ -136,12 +146,37 @@ export class User extends Entity<UserProps> {
     this.touch()
   }
 
+  get customerId(): string | null {
+    return this.props.customerId
+  }
+
+  set customerId(customerId: string | null | undefined) {
+    if (customerId === undefined) return
+    this.props.customerId = customerId
+    this.touch()
+  }
+
   get password(): string | null {
     return this.props.password
   }
 
+  get subscription(): Subscription | null {
+    return this.props.subscription
+  }
+
+  set subscription(subscription: Subscription | null | undefined) {
+    if (subscription === undefined) return
+
+    this.props.subscription = subscription
+    this.touch()
+  }
+
   get deletedAt() {
     return this.props.deletedAt
+  }
+
+  isSubscriber() {
+    return this.subscription?.status === SubscriptionStatus.PAYED
   }
 
   touch() {

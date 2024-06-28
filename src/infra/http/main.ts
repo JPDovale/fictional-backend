@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './App.module'
 import { EnvService } from '@infra/env/Env.service'
+import { raw } from 'body-parser'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,7 +16,7 @@ async function bootstrap() {
     origin,
     credentials: true,
     methods: 'GET,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     exposedHeaders: [
       'X-Total-Count',
       'X-Page-Count',
@@ -24,6 +25,8 @@ async function bootstrap() {
       'X-Location',
     ],
   })
+
+  app.use('/stripe/webhooks', raw({ type: 'application/json' }))
 
   await app.listen(port)
 }

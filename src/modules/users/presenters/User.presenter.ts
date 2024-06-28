@@ -8,6 +8,7 @@ export interface UserResponse {
   id: string
   name: string
   username: string
+  isSubscriber: boolean
   verified: boolean
   imageUrl: string | null
   createdAt: Date
@@ -31,6 +32,7 @@ export class UserPresenter
       id: raw.id.toString(),
       name: raw.name,
       username: raw.username.toString(),
+      isSubscriber: raw.isSubscriber(),
       imageUrl: raw.imageUrl?.startsWith('http')
         ? raw.imageUrl
         : makeImageLocation(raw.imageUrl),
