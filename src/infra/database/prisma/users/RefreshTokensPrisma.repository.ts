@@ -68,4 +68,12 @@ export class RefreshTokensPrismaRepository
 
     return this.mapper.toDomain(refreshToken)
   }
+
+  async deleteAllByUserId(userId: string): Promise<void> {
+    await this.prisma.refreshToken.deleteMany({
+      where: {
+        userId,
+      },
+    })
+  }
 }

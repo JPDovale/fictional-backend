@@ -9,4 +9,6 @@ export abstract class RefreshTokensRepository<T = unknown> extends Repository<
     userId: string,
     token: string,
   ): Promise<RefreshToken | null>
+
+  abstract deleteAllByUserId(userId: string): Promise<void>
 }
