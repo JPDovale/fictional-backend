@@ -18,7 +18,7 @@ model User {
   customerId String?   @unique @map("customer_id")
   name       String
   email      String    @unique
-  username   String    @unique
+  username   String
   password   String?
   imageUrl   String?   @map("image_url")
   authId     String?   @map("auth_id")
