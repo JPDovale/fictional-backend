@@ -130,6 +130,9 @@ export class CreatePersonAttributeMutationService
 
       const event = Event.create({
         timelineId: timeline.id,
+        title:
+          title ??
+          `Mudança em $=${attribute.id.toString()}=attr$= de $=${person.id.toString()}=pers$=`,
         event: `Mudança em $=${attribute.id.toString()}=attr$= de $=${person.id.toString()}=pers$=`,
         date: EventDate.createFromString(date),
         importanceLevel: importanceLevel as ImportanceLevel,

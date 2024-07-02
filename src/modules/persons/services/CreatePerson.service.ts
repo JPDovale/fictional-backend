@@ -131,11 +131,16 @@ export class CreatePersonService
     await this.personsRepository.create(person)
 
     if (project.buildBlocks.implements(BuildBlock.TIME_LINES)) {
-      const events: { date: string; event: string; type: EventToPersonType }[] =
-        []
+      const events: {
+        date: string
+        event: string
+        type: EventToPersonType
+        title: string
+      }[] = []
 
       if (birthDate) {
         events.push({
+          title: `Nascimento de $=${person.id.toString()}=pers$=`,
           date: birthDate,
           event: `Nascimento de $=${person.id.toString()}=pers$=`,
           type: EventToPersonType.BIRTH,
@@ -144,6 +149,7 @@ export class CreatePersonService
 
       if (deathDate) {
         events.push({
+          title: `Morte de $=${person.id.toString()}=pers$=`,
           date: deathDate,
           event: `Morte de $=${person.id.toString()}=pers$=`,
           type: EventToPersonType.DEATH,

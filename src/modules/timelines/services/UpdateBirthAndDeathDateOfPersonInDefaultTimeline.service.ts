@@ -97,6 +97,7 @@ export class UpdateBirthAndDeathDateOfPersonInDefaultTimelineService
         type === EventToPersonType.BIRTH ? 'Nascimento' : 'Morte'
 
       const event = Event.create({
+        title: `${firstWordOfEvent} de $=${person.id.toString()}=pers$=`,
         timelineId: timeline!.id,
         event: `${firstWordOfEvent} de $=${person.id.toString()}=pers$=`,
         date: EventDate.createFromString(date),

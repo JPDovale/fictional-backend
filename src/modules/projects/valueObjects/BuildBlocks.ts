@@ -4,6 +4,7 @@ export enum BuildBlock {
   FOUNDATION = 'FOUNDATION',
   TIME_LINES = 'TIME_LINES',
   PERSONS = 'PERSONS',
+  SCENES_BOARD = 'SCENES_BOARD',
 }
 
 export type BuildBlocksProps = BuildBlock[]
@@ -54,6 +55,7 @@ export class BuildBlocks extends ValueObject<BuildBlocksProps> {
       [BuildBlock.PERSONS]: false,
       [BuildBlock.TIME_LINES]: false,
       [BuildBlock.FOUNDATION]: false,
+      [BuildBlock.SCENES_BOARD]: false,
     }
 
     this.props.forEach((bb) => (result[bb] = true))
