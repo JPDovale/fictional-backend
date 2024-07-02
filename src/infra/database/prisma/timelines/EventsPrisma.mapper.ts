@@ -21,6 +21,7 @@ export class EventsPrismaMapper extends RepositoryMapper<
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt,
         trashedAt: raw.deletedAt,
+        title: raw.title ?? raw.event,
       },
       UniqueId.create(raw.id),
     )
@@ -30,6 +31,7 @@ export class EventsPrismaMapper extends RepositoryMapper<
     return {
       id: entity.id.toString(),
       event: entity.event,
+      title: entity.title,
       importanceLevel: entity.importanceLevel,
       date: entity.date.toString(),
       timelineId: entity.timelineId.toString(),

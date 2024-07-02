@@ -125,7 +125,12 @@ export class Person extends AggregateRoot<PersonProps> {
   }
 
   addPersonCreatedWithTimelineEvent(
-    events: { date: string; event: string; type: EventToPersonType }[],
+    events: {
+      date: string
+      event: string
+      type: EventToPersonType
+      title: string
+    }[],
   ) {
     this.addDomainEvent(new PersonCreatedWithTimelineEvent(this, events))
   }

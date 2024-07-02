@@ -10,11 +10,17 @@ export class PersonCreatedWithTimelineEvent implements DomainEvent {
     date: string
     event: string
     type: EventToPersonType
+    title: string
   }[]
 
   constructor(
     person: Person,
-    eventsDate: { date: string; event: string; type: EventToPersonType }[],
+    eventsDate: {
+      date: string
+      event: string
+      type: EventToPersonType
+      title: string
+    }[],
   ) {
     this._person = person
     this._eventsDate = eventsDate

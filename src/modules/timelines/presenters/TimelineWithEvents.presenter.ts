@@ -6,6 +6,7 @@ import { ImportanceLevel } from '../entities/Event'
 
 export interface EventResponse {
   id: string
+  title: string
   event: string
   importanceLevel: ImportanceLevel
   date: string
@@ -55,6 +56,7 @@ export class TimelineWithEventsPresenter
       events: raw.events.getItems().map((event) => ({
         id: event.id.toString(),
         event: event.event,
+        title: event.title,
         importanceLevel: event.importanceLevel,
         date: event.date.toString(),
         dateObject: {

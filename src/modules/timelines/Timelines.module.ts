@@ -7,14 +7,32 @@ import { GetTimelinesService } from './services/GetTimelines.service'
 import { GetTimelineService } from './services/GetTimeline.service'
 import { GetTimelineController } from './controllers/GetTimeline.controller'
 import { TimelineWithEventsPresenter } from './presenters/TimelineWithEvents.presenter'
+import { CreateEventController } from './controllers/CreateEvent.controller'
+import { CreateEventService } from './services/CreateEvent.service'
+import { EmptyPresenter } from '@infra/presenters/Empty.presente'
+import { TextModule } from '@providers/text/Text.module'
+import { UpdateEventController } from './controllers/UpdateEvent.controller'
+import { UpdateEventService } from './services/UpdateEvent.service'
+import { DeleteEventController } from './controllers/DeleteEvent.controller'
+import { DeleteEventService } from './services/DeleteEvent.service'
 
 @Module({
-  imports: [DatabaseModule],
-  controllers: [GetTimelinesController, GetTimelineController],
+  imports: [DatabaseModule, TextModule],
+  controllers: [
+    GetTimelinesController,
+    GetTimelineController,
+    CreateEventController,
+    UpdateEventController,
+    DeleteEventController,
+  ],
   providers: [
     GetTimelinesService,
     GetTimelineService,
+    CreateEventService,
+    UpdateEventService,
+    DeleteEventService,
     ErrorPresenter,
+    EmptyPresenter,
     TimelinesPresenter,
     TimelineWithEventsPresenter,
   ],

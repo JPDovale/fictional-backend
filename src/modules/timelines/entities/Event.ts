@@ -10,6 +10,7 @@ export type ImportanceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 
 interface EventProps {
   date: EventDate
+  title: string
   event: string
   importanceLevel: ImportanceLevel
   timelineId: UniqueId
@@ -59,11 +60,12 @@ export class Event extends AggregateRoot<EventProps> {
     this.touch()
   }
 
-  get event() {
+  get event(): string {
     return this.props.event
   }
 
-  set event(event: string) {
+  set event(event: string | undefined) {
+    if (event === undefined) return
     if (event === this.props.event) return
     this.props.event = event
     this.touch()
@@ -81,6 +83,16 @@ export class Event extends AggregateRoot<EventProps> {
     if (!importanceLevel) return
     if (importanceLevel === this.importanceLevel) return
     this.props.importanceLevel = importanceLevel
+    this.touch()
+  }
+
+  get title(): string {
+    return this.props.title
+  }
+
+  set title(title: string | undefined) {
+    if (title === undefined) return
+    this.props.title = title
     this.touch()
   }
 

@@ -71,8 +71,16 @@ export class TimelinesPrismaRepository
     })
   }
 
-  findById(_id: string, _ctx?: PrismaContext): Promise<Timeline | null> {
-    throw new Error('Method not implemented.')
+  async findById(id: string, ctx?: PrismaContext): Promise<Timeline | null> {
+    const db = ctx?.prisma ?? this.prisma
+
+    const timeline = await db.timeline.findFirst({
+      where: { id },
+    })
+
+    if (!timeline) return null
+
+    return this.mapper.toDomain(timeline)
   }
 
   findAll(_ctx?: PrismaContext): Promise<Timeline[]> {

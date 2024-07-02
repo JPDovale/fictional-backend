@@ -15,7 +15,12 @@ import { ProjectActionBlocked } from '@modules/projects/errors/ProjectActionBloc
 import { EventsToPersonRepository } from '../repositories/EventsToPerson.repository'
 import { TransactorService } from '@infra/database/transactor/contracts/Transactor.service'
 
-type EventReceived = { date: string; event: string; type: EventToPersonType }
+type EventReceived = {
+  date: string
+  event: string
+  type: EventToPersonType
+  title: string
+}
 
 type Request = {
   person: Person
@@ -71,6 +76,7 @@ export class CreateManyPersonEventsForDefaultTimelineService
 
       const event = Event.create({
         date,
+        title: eventReceived.title,
         timelineId: timeline.id,
         event: eventReceived.event,
         importanceLevel: Event.getImportanceLevelForPersonEvent(
