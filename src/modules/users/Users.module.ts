@@ -19,6 +19,8 @@ import { RefreshTokenController } from './controllers/RefreshToken.controller'
 import { DeleteUserSessionsService } from './services/DeleteUserSessions.service'
 import { DeleteUserSessionsController } from './controllers/DeleteUserSessions.controller'
 import { EmptyPresenter } from '@infra/presenters/Empty.presente'
+import { UpdateUserController } from './controllers/UpdateUser.controller'
+import { UpdateUserService } from './services/UpdateUser.service'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule, EnvModule, DateModule],
@@ -29,6 +31,7 @@ import { EmptyPresenter } from '@infra/presenters/Empty.presente'
     SocialLoginUserService,
     RefreshTokenService,
     DeleteUserSessionsService,
+    UpdateUserService,
 
     ErrorPresenter,
     UserPresenter,
@@ -42,6 +45,7 @@ import { EmptyPresenter } from '@infra/presenters/Empty.presente'
     SocialLoginUserController,
     RefreshTokenController,
     DeleteUserSessionsController,
+    UpdateUserController,
   ],
 })
 export class UsersModule {}

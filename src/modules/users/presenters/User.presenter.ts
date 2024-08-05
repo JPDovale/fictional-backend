@@ -7,6 +7,8 @@ import { makeImageLocation } from '@utils/makeImageLocation'
 export interface UserResponse {
   id: string
   name: string
+  email: string
+  isSocialLogin: boolean
   username: string
   isSubscriber: boolean
   verified: boolean
@@ -31,6 +33,8 @@ export class UserPresenter
     return {
       id: raw.id.toString(),
       name: raw.name,
+      email: raw.email,
+      isSocialLogin: !!raw.authId,
       username: raw.username.toString(),
       isSubscriber: raw.isSubscriber(),
       imageUrl: raw.imageUrl?.startsWith('http')
